@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SkylineArt } from "@/components/brand/Artwork";
+import { Portrait } from "@/components/brand/Portrait";
 import { CouncilCard, DiscussionRow, EventCard, NewsCard, RecordCard } from "@/components/shared/cards";
 import { FeaturedCarousel } from "@/components/shared/FeaturedCarousel";
 import { SectionHeading } from "@/components/shared/PageHeader";
@@ -22,9 +23,10 @@ import { Button } from "@/components/ui/button";
 import { CardSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { getData } from "@/lib/api";
-import type { Announcement, Council, DiscussionItem, EventItem, NewsCard as NewsCardT, RecordCard as RecordCardT } from "@/lib/types";
+import type { Announcement, Council, PrincipalProfile, DiscussionItem, EventItem, NewsCard as NewsCardT, RecordCard as RecordCardT } from "@/lib/types";
 
 interface HomeData {
+  profile: Pick<PrincipalProfile, "name" | "title" | "tagline" | "summary" | "photo_url" | "photo_alt">;
   featured: RecordCardT[];
   councils: Council[];
   news: NewsCardT[];
@@ -70,17 +72,17 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
           </h1>
           <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">Non-Indigenes for Philip Aduda Movement</p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 sm:text-lg">
-            A digital community connecting residents, sharing information, documenting public records and facilitating constructive civic
-            engagement across the Federal Capital Territory.
+            The support movement for Sen. Philip Aduda — uniting residents across the Federal Capital Territory, sharing his record of
+            service and carrying his message to every community.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link to={user ? "/dashboard" : "/join"}>
-                {user ? "Go to my dashboard" : "Join NIPAM"} <ArrowRight />
+                {user ? "Go to my dashboard" : "Join the movement"} <ArrowRight />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline-light">
-              <a href="#explore">Explore NIPAM</a>
+              <Link to="/philip-aduda">Meet Sen. Philip Aduda</Link>
             </Button>
           </div>
           <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-white/15 pt-6">
@@ -152,6 +154,38 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Meet Sen. Philip Aduda */}
+      <section className="section bg-surface" aria-labelledby="aduda-heading">
+        <div className="container grid items-center gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+          <div className="mx-auto w-full max-w-sm">
+            <div className="overflow-hidden rounded-3xl shadow-lift">
+              {data ? <Portrait src={data.profile.photo_url} alt={data.profile.photo_alt} className="aspect-[4/5] w-full" /> : <Skeleton className="aspect-[4/5] rounded-none" />}
+            </div>
+          </div>
+          <div>
+            <p className="eyebrow mb-3">The man we support</p>
+            <h2 id="aduda-heading" className="text-3xl font-extrabold sm:text-4xl lg:text-5xl">
+              Meet {data?.profile.name ?? "Sen. Philip Aduda"}
+            </h2>
+            {data?.profile.title && <p className="mt-3 text-lg font-semibold text-green-600">{data.profile.title}</p>}
+            {data?.profile.tagline && (
+              <p className="mt-5 border-l-4 border-green-500 pl-4 font-display text-xl font-semibold leading-snug text-navy">{data.profile.tagline}</p>
+            )}
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{data?.profile.summary}</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" variant="navy">
+                <Link to="/philip-aduda">
+                  Read his story <ArrowRight />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/our-record">See his record</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* About */}
       <section className="section bg-white" aria-labelledby="about-heading">
         <div className="container">
@@ -159,15 +193,15 @@ export default function Home() {
             <div>
               <p className="eyebrow mb-3">About NIPAM</p>
               <h2 id="about-heading" className="text-3xl font-extrabold sm:text-4xl">
-                A community platform for residents of the FCT
+                One movement for Sen. Philip Aduda, across the FCT
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-                NIPAM brings together residents and voluntary members across the Federal Capital Territory. We share accessible information,
-                document public records with their sources, and create space for respectful civic conversation.
+                NIPAM — Non-Indigenes for Philip Aduda Movement — brings together residents and voluntary supporters across the Federal Capital
+                Territory to spread his name, share his record of service and keep every community informed and engaged.
               </p>
               <ul className="mt-6 space-y-3 text-[15px] text-slate-700">
                 {[
-                  "Membership is voluntary and free — you choose how to take part.",
+                  "Membership is voluntary and free — join and help spread the word.",
                   "Every record shows its verification status and source.",
                   "You control which communications you receive.",
                 ].map((t) => (
@@ -236,8 +270,8 @@ export default function Home() {
         <div className="container">
           <SectionHeading
             eyebrow="Our Record"
-            title={<span id="record-heading">Evidence-based public records</span>}
-            description="A searchable library of documented projects and public activities. Each entry carries a verification status and its sources."
+            title={<span id="record-heading">His record of service</span>}
+            description="A searchable library of Sen. Philip Aduda's documented projects and public activities, each with its sources and verification status."
             action={
               <Button asChild variant="outline">
                 <Link to="/our-record">
@@ -365,10 +399,10 @@ export default function Home() {
               <div className="pointer-events-none absolute -bottom-24 -right-10 size-72 rounded-full border-[30px] border-white/5" />
               <p className="eyebrow text-green-300">Join the movement</p>
               <h2 id="join-heading" className="mx-auto mt-3 max-w-2xl text-3xl font-extrabold text-white sm:text-4xl">
-                Be part of a connected, informed FCT community
+                Stand with Sen. Philip Aduda
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-navy-100">
-                Create your free account in minutes. Choose your Area Council, follow updates and events, and take part in the conversation.
+                Join supporters across the six Area Councils. Create your free account in minutes, follow his work and events, and help spread the word.
               </p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg">

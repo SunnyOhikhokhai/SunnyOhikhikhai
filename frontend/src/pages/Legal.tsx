@@ -135,6 +135,14 @@ The NIPAM community is a space for constructive conversation among residents of 
 - **Personal information** — posting phone numbers, addresses or email addresses (yours or anyone else's)
 - **Spam**, repetitive posting, or misleading links
 
+## Automatic language filter
+
+Posts, comments and public profile names are checked automatically before they appear:
+
+- **Insults, profanity, hateful or threatening language** are blocked — including disguised spellings.
+- **Borderline wording** is held for a moderator to review before it becomes visible.
+- Repeated attempts to post abusive language **pause posting for 24 hours**, and may lead to suspension.
+
 ## Moderation
 
 - Anyone can use the **Report** button. Reports are confidential.

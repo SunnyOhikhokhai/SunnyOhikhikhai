@@ -106,6 +106,12 @@ await check("Logout and log back in", async () => {
   await m.getByRole("heading", { name: /Welcome, Chidinma/ }).waitFor();
 }, m);
 
+await check("Sen. Philip Aduda profile page", async () => {
+  await m.goto(`${BASE}/philip-aduda`);
+  await m.getByRole("heading", { level: 1, name: "Sen. Philip Aduda" }).waitFor();
+  await m.getByRole("link", { name: "See his record" }).first().waitFor();
+}, m);
+
 await check("Area Council page tabs", async () => {
   await m.goto(`${BASE}/area-councils/kuje`);
   await m.getByRole("heading", { name: "Kuje Area Council" }).waitFor();
@@ -149,6 +155,9 @@ await check("Community — start a discussion and comment", async () => {
   await m.goto(`${BASE}/community`);
   await m.getByRole("button", { name: "Start a discussion" }).click();
   await m.getByLabel("Title").fill("Improving street lighting in Kuje");
+  await m.getByLabel("Your post").fill("Anyone who disagrees with this plan is an idiot and a mumu.");
+  await m.getByRole("button", { name: "Post discussion" }).click();
+  await m.getByText(/insulting, offensive or hateful language/).first().waitFor();
   await m.getByLabel("Your post").fill("How can residents best work together to report and follow up on street lighting issues?");
   await m.getByRole("button", { name: "Post discussion" }).click();
   await m.getByRole("heading", { name: "Improving street lighting in Kuje" }).waitFor();
@@ -214,6 +223,23 @@ await check("Admin — members search and detail", async () => {
   await a.getByRole("button", { name: "View" }).first().click();
   await a.getByText("Communication preferences").waitFor();
   await a.keyboard.press("Escape");
+}, a);
+
+await check("Admin — edit Sen. Aduda profile", async () => {
+  await a.getByRole("link", { name: "Sen. Aduda profile" }).click();
+  await a.getByLabel("Title / position").fill("E2E title");
+  await a.getByRole("button", { name: "Save & publish" }).click();
+  await a.getByText("Profile published").waitFor();
+}, a);
+
+await check("Admin — language filter word list", async () => {
+  await a.getByRole("link", { name: "Moderation" }).click();
+  await a.getByRole("tab", { name: "Language filter" }).click();
+  await a.getByPlaceholder("Word or phrase").fill("e2ebadword");
+  await a.getByRole("button", { name: "Add to filter" }).click();
+  await a.getByText("e2ebadword", { exact: true }).waitFor();
+  await a.getByRole("button", { name: "Remove e2ebadword" }).click();
+  await a.getByRole("button", { name: "Remove", exact: true }).click();
 }, a);
 
 await check("Admin — create, source and publish a record", async () => {

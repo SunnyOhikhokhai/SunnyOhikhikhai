@@ -204,3 +204,17 @@ export interface Meta {
   discussion_categories: Category[];
   record_years: number[];
 }
+
+export interface PrincipalProfile {
+  name: string;
+  title: string;
+  tagline: string;
+  summary: string;
+  biography: string;
+  photo_url: string | null;
+  photo_alt: string | null;
+  timeline: { year: string; title: string; description: string; source: string }[];
+  gallery: { url: string; alt: string; caption: string }[];
+  links: { label: string; url: string }[];
+  updated_at: string;
+}

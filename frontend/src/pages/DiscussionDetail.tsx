@@ -52,11 +52,12 @@ function LikeButton({ type, id, liked, count, onChange }: { type: "discussion" |
 function CommentForm({ discussionId, parentId, onDone, autoFocus }: { discussionId: number; parentId?: number; onDone: () => void; autoFocus?: boolean }) {
   const [body, setBody] = useState("");
   const m = useMutation({
-    mutationFn: () => api.post(`/api/discussions/${discussionId}/comments`, { body, parent_id: parentId ?? null }),
-    onSuccess: () => {
+    mutationFn: () => api.post<{ data: { held_for_review?: boolean } }>(`/api/discussions/${discussionId}/comments`, { body, parent_id: parentId ?? null }),
+    onSuccess: (res) => {
       setBody("");
       onDone();
-      toast.success(parentId ? "Reply posted" : "Comment posted");
+      if (res.data.held_for_review) toast.info("Thanks — your comment will appear once a moderator has reviewed its wording.");
+      else toast.success(parentId ? "Reply posted" : "Comment posted");
     },
     onError: (e: Error) => toast.error(e.message),
   });

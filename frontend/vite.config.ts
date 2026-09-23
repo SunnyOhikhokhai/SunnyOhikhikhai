@@ -40,7 +40,7 @@ export default defineConfig({
         name: "NIPAM — Non-Indigenes for Philip Aduda Movement",
         short_name: "NIPAM",
         description:
-          "A digital community connecting residents, sharing information and facilitating constructive civic engagement across the FCT.",
+          "The support movement for Sen. Philip Aduda across the Federal Capital Territory.",
         theme_color: "#063B66",
         background_color: "#063B66",
         display: "standalone",

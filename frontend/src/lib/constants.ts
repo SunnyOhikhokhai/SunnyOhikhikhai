@@ -2,6 +2,7 @@ import type { ContentLabel, VerificationStatus } from "./types";
 
 export const NAV_LINKS = [
   { to: "/", label: "Home" },
+  { to: "/philip-aduda", label: "Sen. Aduda" },
   { to: "/about", label: "About" },
   { to: "/our-record", label: "Our Record" },
   { to: "/area-councils", label: "Area Councils" },

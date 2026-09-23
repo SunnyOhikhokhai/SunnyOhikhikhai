@@ -10,7 +10,7 @@ interface SeoProps {
 }
 
 const DEFAULT_DESC =
-  "NIPAM is a digital community connecting residents, sharing information, documenting public records and facilitating constructive civic engagement across the Federal Capital Territory.";
+  "NIPAM — Non-Indigenes for Philip Aduda Movement — the support movement for Sen. Philip Aduda across the Federal Capital Territory.";
 
 export function Seo({ title, description = DEFAULT_DESC, image, type = "website", noindex, jsonLd }: SeoProps) {
   const full = title ? `${title} | NIPAM` : "NIPAM — Non-Indigenes for Philip Aduda Movement";

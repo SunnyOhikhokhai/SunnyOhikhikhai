@@ -116,7 +116,7 @@ export function SiteHeader() {
 
   const linkCls = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "relative rounded-lg px-2.5 py-2 text-[14px] font-semibold transition-colors hover:text-green-600",
+      "relative whitespace-nowrap rounded-lg px-2.5 py-2 text-[14px] font-semibold transition-colors hover:text-green-600",
       isActive ? "text-navy after:absolute after:inset-x-2.5 after:-bottom-[13px] after:h-[3px] after:rounded-full after:bg-green-500" : "text-slate-600",
     );
 
@@ -132,14 +132,14 @@ export function SiteHeader() {
           <Link to="/" className="mr-2 shrink-0 rounded-lg" aria-label="NIPAM home">
             <Logo />
           </Link>
-          <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-0.5 lg:flex">
+          <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-0.5 xl:flex">
             {NAV_LINKS.map((l) => (
               <NavLink key={l.to} to={l.to} end={l.to === "/"} className={linkCls}>
                 {l.label}
               </NavLink>
             ))}
           </nav>
-          <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
+          <div className="ml-auto flex items-center gap-1.5 xl:ml-0">
             <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} aria-label="Search (Ctrl+K)">
               <Search className="!size-5" />
             </Button>
@@ -158,7 +158,7 @@ export function SiteHeader() {
                 </Button>
               </div>
             )}
-            <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
+            <Button variant="ghost" size="icon" className="xl:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
               <Menu className="!size-6" />
             </Button>
           </div>

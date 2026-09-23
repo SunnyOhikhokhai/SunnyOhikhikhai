@@ -1,6 +1,6 @@
 # NIPAM — Non-Indigenes for Philip Aduda Movement
 
-A mobile-first civic/community platform for residents and voluntary members across the six Area Councils of the Federal Capital Territory (FCT), Nigeria.
+The digital home of NIPAM, the support movement for **Sen. Philip Aduda**. It is a mobile-first platform that unites supporters across the six Area Councils of the Federal Capital Territory (FCT), Nigeria, shares his record, and spreads his message.
 
 | Part | Stack |
 |---|---|
@@ -9,11 +9,11 @@ A mobile-first civic/community platform for residents and voluntary members acro
 
 ## What's included
 
-**Public site** — landing page (hero, rotating featured records, About pillars, six Area Council cards, record highlights, news, events, community, join CTA), About, **Our Record** (grid/list views, filters by Area Council, category, year, verification status, search, sort), record detail (sources, documents, images, verification panel, related records, share), Area Councils with a schematic interactive map and a tabbed page per council (Overview, Community Updates, Events, Public Information, Projects/Records, Discussions, Announcements), News with categories, Events (upcoming, past, calendar, registration, add-to-calendar), moderated Community (discussions, replies, likes, reporting), global search (Ctrl/⌘ K), Contact, Privacy Policy, Terms of Use, Community Guidelines, and a 404 page.
+**Public site** — landing page (hero, rotating featured records, a "Meet Sen. Philip Aduda" section, About pillars, six Area Council cards, record highlights, news, events, community, join CTA), a **Sen. Philip Aduda profile page** (`/philip-aduda`: biography, public-service timeline with sources, gallery, official channels — edited from the admin dashboard), About, **Our Record** (grid/list views, filters by Area Council, category, year, verification status, search, sort), record detail (sources, documents, images, verification panel, related records, share), Area Councils with a schematic interactive map and a tabbed page per council (Overview, Community Updates, Events, Public Information, Projects/Records, Discussions, Announcements), News with categories, Events (upcoming, past, calendar, registration, add-to-calendar), moderated Community (discussions, replies, likes, reporting), global search (Ctrl/⌘ K), Contact, Privacy Policy, Terms of Use, Community Guidelines, and a 404 page.
 
 **Members** — 4-step registration (personal info → Area Council → email/phone OTP verification → consent), password or one-time-code login, remember me, forgot/reset password, a dashboard, a notification centre, and settings (profile, verification, notification preferences per channel, change password, delete account).
 
-**Admin (`/admin`)** — overview stats and charts, analytics, member management (search, filter, detail, suspend/reactivate, record opt-outs, CSV export of permitted data), CMS for records (with sources, images and PDFs), news, events (publish, cancel, archive), announcements (schedule, publish, expire) and Area Council profiles, a moderation queue, role assignment, the audit log, and a contact inbox.
+**Admin (`/admin`)** — overview stats and charts, analytics, member management (search, filter, detail, suspend/reactivate, record opt-outs, CSV export of permitted data), CMS for records (with sources, images and PDFs), news, events (publish, cancel, archive), announcements (schedule, publish, expire) and Area Council profiles, a moderation queue, the **language filter word list**, the Sen. Aduda profile editor, role assignment, the audit log, and a contact inbox.
 
 ### Roles
 
@@ -32,6 +32,16 @@ A mobile-first civic/community platform for residents and voluntary members acro
 - Community posts are labelled as user-generated content.
 - Demo content is flagged `is_demo` and shows a **Sample** badge. It contains placeholders such as **[VERIFIED PROJECT INFORMATION TO BE ADDED]**. No projects, figures, dates or achievements have been invented.
 - An Area Council is self-declared and is stated everywhere **not** to indicate electoral eligibility or polling location. Nothing collects or infers ethnicity, religion, indigene status or political views.
+
+### Language filter (hate speech and insults)
+
+Every discussion, comment, registration name and public profile field is checked before it's saved (`backend/app/services/moderation.py`):
+
+- **Block** terms (profanity, insults including Pidgin/local ones, hateful "go back to your village"-type phrases, threats) reject the post with a polite message.
+- **Review** terms (borderline wording) publish the post hidden and put it in the moderation queue, where a moderator can **Approve & publish** or remove it.
+- Disguised spellings are caught: capitals, leetspeak (`1d10t`), repeated letters (`iiidiot`), spaced or dotted letters (`f.u.c.k`, `s t u p i d`) and masked letters (`st*pid`). Whole-word matching avoids false positives such as "Scunthorpe".
+- Five blocked attempts in 24 hours pause that member's posting for a day. Every blocked attempt is audit-logged.
+- Moderators manage the list under **Admin → Moderation → Language filter**. Add local-language insults and tribal slurs there; no redeploy is needed.
 
 ### Security
 
@@ -64,10 +74,10 @@ To use PostgreSQL locally, set `NIPAM_DATABASE_URL=postgresql+psycopg://user:pas
 ## Tests
 
 ```bash
-cd backend && .venv/bin/pytest -q                          # 34 API tests (SQLite)
+cd backend && .venv/bin/pytest -q                          # 47 API tests (SQLite)
 NIPAM_TEST_DATABASE_URL=postgresql+psycopg://… .venv/bin/pytest -q   # same tests against PostgreSQL
 cd frontend && npm run typecheck && npm run build
-BASE=http://localhost:5173 npm run e2e                     # 25-step browser test of member + admin flows
+BASE=http://localhost:5173 npm run e2e                     # 28-step browser test of member + admin flows
 ```
 
 The end-to-end script covers registration → verification → consent → dashboard → logout/login → Area Council → records → news → event registration → calendar → community post/comment/like → notifications → settings → search → reporting, then admin login → members → record CMS with sources → news → events → moderation → analytics → audit log. It saves screenshots to `frontend/e2e-screens/`.
@@ -93,6 +103,7 @@ CI (`.github/workflows/ci.yml`) runs lint, the API tests on SQLite and PostgreSQ
 ## Before launch — to be supplied by NIPAM
 
 - **Official logo:** the current mark in `frontend/src/components/brand/Logo.tsx` and `frontend/public/brand/*.svg` is a placeholder based on the brief. Replace it, then run `npm run icons` to regenerate the favicon, PWA icons, splash screens and Open Graph image.
+- **Sen. Philip Aduda's profile:** add his official photo, title, biography, timeline (with sources) and official channels under **Admin → Sen. Aduda profile**. It currently shows clearly marked placeholders.
 - **Verified content:** replace the sample records, events and news, or run the seed without `--demo`.
 - **Social media links** in `SiteFooter.tsx`, and contact details.
 - **Legal review:** have the Privacy Policy, Terms and Guidelines (`frontend/src/pages/Legal.tsx`) reviewed against the Nigeria Data Protection Act 2023.

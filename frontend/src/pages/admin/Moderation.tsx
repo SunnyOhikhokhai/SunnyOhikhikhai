@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { EyeOff, Lock, Pin, ShieldCheck, Trash2, Undo2, UserX } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { EyeOff, Lock, Pin, Plus, ShieldCheck, Trash2, Undo2, UserX } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -7,10 +7,10 @@ import { EmptyState, ErrorState } from "@/components/shared/states";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/components/ui/confirm";
-import { Select } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/lib/api";
+import { api, type Paged } from "@/lib/api";
 import { REPORT_REASONS } from "@/lib/constants";
 import type { DiscussionItem } from "@/lib/types";
 import { timeAgo } from "@/lib/utils";
@@ -62,7 +62,7 @@ function Reports() {
                 <Badge variant="danger">{reasonLabel(r.reason)}</Badge>
                 <Badge variant="outline" className="capitalize">{r.target_type}</Badge>
                 <StatusBadge status={r.status} />
-                <span className="ml-auto text-xs text-slate-500">Reported {timeAgo(r.created_at)}{r.reporter && ` by ${r.reporter}`}</span>
+                <span className="ml-auto text-xs text-slate-500">{r.reporter ? `Reported ${timeAgo(r.created_at)} by ${r.reporter}` : `Held by the language filter ${timeAgo(r.created_at)}`}</span>
               </div>
               {r.details && <p className="mt-2 text-sm italic text-slate-600">“{r.details}”</p>}
               {r.target ? (
@@ -77,7 +77,7 @@ function Reports() {
               ) : <p className="mt-3 text-sm text-muted-foreground">Content no longer exists.</p>}
               {r.status === "open" ? (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" onClick={() => act(r.id, "dismiss", "")}><Undo2 /> Dismiss</Button>
+                  <Button size="sm" variant="outline" onClick={() => act(r.id, "dismiss", "")}><Undo2 /> {r.reporter ? "Dismiss" : "Approve & publish"}</Button>
                   <Button size="sm" variant="outline" onClick={() => act(r.id, "hide_content", "Hide this content?")}><EyeOff /> Hide</Button>
                   <Button size="sm" variant="destructive" onClick={() => act(r.id, "remove_content", "Remove this content?")}><Trash2 /> Remove content</Button>
                   <Button size="sm" variant="destructive" onClick={() => act(r.id, "suspend_author", "Remove content and suspend the author?")}><UserX /> Remove & suspend author</Button>
@@ -141,13 +141,89 @@ function Discussions() {
   );
 }
 
+interface Term { id: number; term: string; severity: "block" | "review"; category: string; is_active: boolean }
+
+const CATEGORY_LABEL: Record<string, string> = { insult: "Insult", profanity: "Profanity", hate: "Hate / tribalism", threat: "Threat", other: "Other" };
+
+function LanguageFilter() {
+  const qc = useQueryClient();
+  const confirm = useConfirm();
+  const [f, setF] = useState({ term: "", severity: "block", category: "insult" });
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["admin", "blocked-terms"],
+    queryFn: () => api.get<Paged<Term> & { meta: { blocked_last_24h: number } }>("/api/admin/blocked-terms"),
+  });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin", "blocked-terms"] });
+  const add = useMutation({
+    mutationFn: () => api.post("/api/admin/blocked-terms", f),
+    onSuccess: () => { toast.success(`"${f.term}" added to the filter`); setF({ ...f, term: "" }); refresh(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const groups = (data?.data ?? []).reduce<Record<string, Term[]>>((acc, t) => ((acc[t.category] ??= []).push(t), acc), {});
+  return (
+    <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="space-y-5">
+        <p className="rounded-2xl bg-surface p-4 text-sm text-slate-600 ring-1 ring-border">
+          Words and phrases below are checked in every post, comment and public profile name — including disguised spellings like
+          <code className="mx-1 rounded bg-white px-1">f.u.c.k</code>, <code className="mx-1 rounded bg-white px-1">st*pid</code> or
+          <code className="mx-1 rounded bg-white px-1">1d10t</code>. <strong className="text-navy">Block</strong> rejects the post;{" "}
+          <strong className="text-navy">Review</strong> hides it until a moderator approves it in the Reports queue. Members who hit the
+          filter 5 times in 24 hours have posting paused for a day.
+          {data && <span className="mt-2 block font-semibold text-navy">{data.meta.blocked_last_24h} abusive post attempt{data.meta.blocked_last_24h === 1 ? "" : "s"} blocked in the last 24 hours.</span>}
+        </p>
+        {error ? <ErrorState error={error} onRetry={() => refetch()} /> : isLoading ? <Skeleton className="h-60" /> : (
+          Object.entries(groups).map(([cat, terms]) => (
+            <section key={cat} className="rounded-2xl border border-border bg-white p-5 shadow-card">
+              <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">{CATEGORY_LABEL[cat] ?? cat} ({terms.length})</h3>
+              <ul className="flex flex-wrap gap-2">
+                {terms.map((t) => (
+                  <li key={t.id} className="flex items-center gap-1.5 rounded-full bg-surface py-1 pl-3 pr-1 text-sm ring-1 ring-border">
+                    <span className="font-medium text-navy">{t.term}</span>
+                    <Badge variant={t.severity === "block" ? "danger" : "demo"}>{t.severity}</Badge>
+                    <button
+                      aria-label={`Remove ${t.term}`}
+                      className="rounded-full p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                      onClick={async () => {
+                        if (await confirm({ title: `Remove "${t.term}" from the filter?`, confirmLabel: "Remove", destructive: true })) {
+                          await api.del(`/api/admin/blocked-terms/${t.id}`);
+                          refresh();
+                        }
+                      }}
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        )}
+      </div>
+      <form className="h-fit space-y-4 rounded-2xl border border-border bg-white p-5 shadow-card" onSubmit={(e) => { e.preventDefault(); add.mutate(); }}>
+        <h3 className="text-base font-bold">Add a word or phrase</h3>
+        <p className="text-sm text-muted-foreground">Add local-language insults, tribal slurs or phrases you see being misused.</p>
+        <Input aria-label="Word or phrase" placeholder="Word or phrase" value={f.term} onChange={(e) => setF({ ...f, term: e.target.value })} required minLength={2} />
+        <Select aria-label="Category" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
+          {Object.entries(CATEGORY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+        </Select>
+        <Select aria-label="Action" value={f.severity} onChange={(e) => setF({ ...f, severity: e.target.value })}>
+          <option value="block">Block the post</option>
+          <option value="review">Hold for moderator review</option>
+        </Select>
+        <Button type="submit" loading={add.isPending} className="w-full"><Plus /> Add to filter</Button>
+      </form>
+    </div>
+  );
+}
+
 export default function Moderation() {
   return (
     <>
       <AdminTitle title="Moderation" description="Review reports and manage community discussions against the Community Guidelines. All actions are audit-logged." />
       <Tabs defaultValue="reports">
-        <TabsList><TabsTrigger value="reports">Reports queue</TabsTrigger><TabsTrigger value="discussions">Discussions</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="reports">Reports queue</TabsTrigger><TabsTrigger value="discussions">Discussions</TabsTrigger><TabsTrigger value="filter">Language filter</TabsTrigger></TabsList>
         <TabsContent value="reports"><Reports /></TabsContent>
+        <TabsContent value="filter"><LanguageFilter /></TabsContent>
         <TabsContent value="discussions"><Discussions /></TabsContent>
       </Tabs>
     </>

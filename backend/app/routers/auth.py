@@ -46,6 +46,7 @@ from ..security import (
     verify_password,
 )
 from ..services.audit import audit
+from ..services.moderation import scan
 from ..services.notify import notify_users
 from ..services.otp import consume_code, issue_code
 
@@ -133,6 +134,8 @@ def csrf(request: Request, response: Response):
 @router.post("/register", status_code=201, dependencies=[Depends(csrf_protect), Depends(rate_limit("register", 5, 600))])
 def register(body: RegisterIn, request: Request, response: Response, db: Session = Depends(get_db)):
     validate_password_strength(body.password)
+    if not scan(db, body.full_name, body.ward, body.community).clean:
+        raise ApiError(422, "abusive_language", "Your name or location contains language that isn't allowed.")
     council = db.scalar(select(AreaCouncil).where(AreaCouncil.slug == body.area_council))
     if not council:
         raise ApiError(422, "invalid_area_council", "Please choose one of the six FCT Area Councils.")

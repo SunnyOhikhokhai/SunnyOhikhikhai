@@ -145,8 +145,12 @@ def home(db: Session = Depends(get_db)):
         active_announcements().where(Announcement.area_council_id.is_(None)).order_by(Announcement.created_at.desc()).limit(2)
     ).unique().all()
     total_members = db.scalar(select(func.count()).select_from(User).where(User.deleted_at.is_(None))) or 0
+    from .admin import get_profile
+
+    profile = ser.principal(get_profile(db))
     return ok(
         {
+            "profile": {k: profile[k] for k in ("name", "title", "tagline", "summary", "photo_url", "photo_alt")},
             "featured": [ser.project_card(p) for p in featured],
             "councils": [
                 ser.council(c, member_count=counts.get(c.id, 0), latest_update=latest_by_council[c.id]) for c in councils
@@ -162,6 +166,16 @@ def home(db: Session = Depends(get_db)):
             },
         }
     )
+
+
+# --- Sen. Philip Aduda profile ------------------------------------------------
+
+
+@router.get("/profile")
+def principal_profile(db: Session = Depends(get_db)):
+    from .admin import get_profile
+
+    return ok(ser.principal(get_profile(db)))
 
 
 # --- Area Councils -----------------------------------------------------------

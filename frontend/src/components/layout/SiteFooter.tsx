@@ -25,7 +25,8 @@ const COLUMNS = [
   {
     title: "Explore",
     links: [
-      ["About", "/about"],
+      ["Sen. Philip Aduda", "/philip-aduda"],
+      ["About NIPAM", "/about"],
       ["Our Record", "/our-record"],
       ["Area Councils", "/area-councils"],
       ["News", "/news"],
@@ -59,8 +60,8 @@ export function SiteFooter() {
         <div className="space-y-5">
           <Logo variant="with-name" tone="dark" />
           <p className="max-w-sm text-sm leading-relaxed text-navy-200">
-            A digital community connecting residents, sharing information, documenting public records and facilitating constructive civic
-            engagement across the Federal Capital Territory.
+            The support movement for Sen. Philip Aduda — uniting residents across the Federal Capital Territory, sharing his record and
+            spreading his message.
           </p>
           <ul className="space-y-2 text-sm text-navy-200">
             <li className="flex items-center gap-2">

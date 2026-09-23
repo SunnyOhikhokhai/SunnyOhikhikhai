@@ -105,11 +105,11 @@ export default function OurRecord() {
 
   return (
     <>
-      <Seo title="Our Record" description="A searchable, evidence-oriented library of documented public projects and activities across the FCT, with sources and verification status." />
+      <Seo title="Our Record" description="Sen. Philip Aduda's record: a searchable library of documented projects and activities across the FCT, with sources." />
       <PageHeader
         eyebrow="Our Record"
-        title="Documented public records"
-        description="Projects and public activities across the FCT. Every record shows its verification status and sources — unverified information is never presented as fact."
+        title="Sen. Philip Aduda's record"
+        description="Documented projects and public activities across the FCT. Every record shows its sources and verification status, so supporters can share it with confidence."
         crumbs={[{ to: "/", label: "Home" }, { label: "Our Record" }]}
       >
         <div className="mt-8 flex flex-wrap gap-2">

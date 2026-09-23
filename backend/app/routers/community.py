@@ -15,6 +15,7 @@ from ..deps import csrf_protect, get_optional_user, get_verified_user
 from ..errors import ApiError, forbidden, not_found
 from ..models import (
     AreaCouncil,
+    AuditLog,
     Comment,
     Discussion,
     DiscussionCategory,
@@ -27,6 +28,7 @@ from ..responses import ok, paginate
 from ..schemas import CommentIn, DiscussionIn, ReportIn
 from ..security import rate_limit
 from ..services.audit import audit
+from ..services.moderation import scan
 from ..services.notify import notify_users
 from ..utils import like_term
 
@@ -35,6 +37,47 @@ router = APIRouter(prefix="/api", tags=["community"])
 URL_RE = re.compile(r"https?://", re.I)
 PHONE_RE = re.compile(r"(?:\+?234|0)[789][01]\d[\s-]?\d{3}[\s-]?\d{4}")
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+
+
+BLOCK_LIMIT = 5  # blocked attempts within 24h before posting is paused
+
+
+def check_language(db: Session, user: User, request: Request | None, *texts: str | None) -> bool:
+    """Reject abusive language; returns True when the post must be held for review."""
+    since = utcnow() - timedelta(hours=24)
+    strikes = db.scalar(
+        select(func.count())
+        .select_from(AuditLog)
+        .where(AuditLog.actor_id == user.id, AuditLog.action == "community.blocked_language", AuditLog.created_at >= since)
+    ) or 0
+    if strikes >= BLOCK_LIMIT:
+        raise ApiError(
+            403,
+            "posting_paused",
+            "Posting is paused on your account for 24 hours because several of your recent posts contained abusive language.",
+        )
+    result = scan(db, *texts)
+    if result.blocked:
+        audit(db, user.id, "community.blocked_language", "user", user.id, request, terms=result.blocked)
+        db.commit()
+        remaining = BLOCK_LIMIT - strikes - 1
+        warning = (
+            f" After {remaining} more attempt{'s' if remaining != 1 else ''}, posting will be paused for 24 hours."
+            if remaining > 0
+            else " Posting is now paused on your account for 24 hours."
+        )
+        raise ApiError(
+            422,
+            "abusive_language",
+            "Your post contains insulting, offensive or hateful language, which isn't allowed in the NIPAM community. "
+            "Please rephrase it respectfully." + warning,
+        )
+    return bool(result.review)
+
+
+def hold_for_review(db: Session, target_type: str, target_id: int, terms: str) -> None:
+    db.add(Report(reporter_id=None, target_type=target_type, target_id=target_id, reason="hate_speech",
+                  details=f"Automatically held by the language filter ({terms})."))
 
 
 def check_content(db: Session, user: User, text: str, model, body: str | None = None) -> None:
@@ -122,6 +165,7 @@ def create_discussion(body: DiscussionIn, request: Request, db: Session = Depend
         council = db.scalar(select(AreaCouncil).where(AreaCouncil.slug == body.area_council))
         if not council:
             raise ApiError(422, "invalid_area_council", "Choose a valid Area Council.")
+    held = check_language(db, user, request, body.title, body.body)
     check_content(db, user, body.title + "\n" + body.body, Discussion, body.body)
     d = Discussion(
         title=body.title,
@@ -129,12 +173,15 @@ def create_discussion(body: DiscussionIn, request: Request, db: Session = Depend
         category_id=cat.id,
         area_council_id=council.id if council else None,
         author_id=user.id,
+        status="hidden" if held else "visible",
     )
     db.add(d)
     db.flush()
-    audit(db, user.id, "community.discussion_created", "discussion", d.id, request)
+    if held:
+        hold_for_review(db, "discussion", d.id, "discussion")
+    audit(db, user.id, "community.discussion_created", "discussion", d.id, request, held=held)
     db.commit()
-    return ok(ser.discussion(d, liked=False))
+    return ok({**ser.discussion(d, liked=False), "held_for_review": held})
 
 
 @router.get("/discussions/{did}")
@@ -190,14 +237,26 @@ def add_comment(
             raise ApiError(422, "invalid_parent", "You can only reply to comments in this discussion.")
         if parent.parent_id:  # keep threads one level deep
             parent = db.get(Comment, parent.parent_id)
+    held = check_language(db, user, request, body.body)
     check_content(db, user, body.body, Comment)
-    c = Comment(discussion_id=d.id, parent_id=parent.id if parent else None, author_id=user.id, body=body.body)
+    c = Comment(
+        discussion_id=d.id,
+        parent_id=parent.id if parent else None,
+        author_id=user.id,
+        body=body.body,
+        status="hidden" if held else "visible",
+    )
     db.add(c)
-    d.comment_count = (d.comment_count or 0) + 1
-    d.last_activity_at = utcnow()
+    if not held:
+        d.comment_count = (d.comment_count or 0) + 1
+        d.last_activity_at = utcnow()
     db.flush()
+    if held:
+        hold_for_review(db, "comment", c.id, "comment")
     audit(db, user.id, "community.comment_created", "comment", c.id, request)
     db.commit()
+    if held:
+        return ok({**ser.comment(c, liked=False), "held_for_review": True})
     recipients = {d.author_id} | ({parent.author_id} if parent else set())
     recipients.discard(user.id)
     if recipients:

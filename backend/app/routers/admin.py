@@ -22,6 +22,7 @@ from ..models import (
     Announcement,
     AreaCouncil,
     AuditLog,
+    BlockedTerm,
     Comment,
     ContactMessage,
     ContentViewStat,
@@ -31,6 +32,7 @@ from ..models import (
     MemberAreaCouncil,
     News,
     NewsCategory,
+    PrincipalProfile,
     Project,
     ProjectCategory,
     ProjectDocument,
@@ -46,15 +48,18 @@ from ..responses import ok, paginate
 from ..schemas import (
     AdminAssignIn,
     AnnouncementIn,
+    BlockedTermIn,
     CouncilIn,
     EventIn,
     ModerateIn,
     NewsIn,
+    ProfileIn,
     ProjectIn,
     ResolveReportIn,
     SuspendIn,
 )
 from ..services.audit import audit
+from ..services.moderation import cache as term_cache
 from ..services.notify import audience, notify_users
 from ..services.storage import store_upload
 from ..utils import like_term, unique_slug
@@ -903,7 +908,11 @@ def resolve_report(rid: int, body: ResolveReportIn, request: Request, ctx: Admin
         rep.resolved_by_id = ctx.user.id
         rep.resolved_at = now
     if body.action == "dismiss" and target is not None and target.status == "hidden":
-        target.status = "visible"  # restore auto-hidden content
+        target.status = "visible"  # restore auto-hidden / held content
+        if r.target_type == "comment" and not target.deleted_at:
+            d = db.get(Discussion, target.discussion_id)
+            if d:
+                d.comment_count = (d.comment_count or 0) + 1
     audit(db, ctx.user.id, f"moderation.{body.action}", r.target_type, r.target_id, request, report_id=r.id, note=body.note)
     db.commit()
     return ok({"resolved": True, "status": r.status})
@@ -1074,3 +1083,77 @@ def contact_messages(page: int = 1, page_size: int = 20, ctx: AdminContext = Dep
         page_size,
         lambda m: {"id": m.id, "name": m.name, "email": m.email, "subject": m.subject, "message": m.message, "status": m.status, "created_at": ser.iso(m.created_at)},
     )
+
+
+# ---------------------------------------------------------------------------
+# Language filter word list
+# ---------------------------------------------------------------------------
+
+
+def _term(t: BlockedTerm) -> dict:
+    return {"id": t.id, "term": t.term, "severity": t.severity, "category": t.category, "is_active": t.is_active, "created_at": ser.iso(t.created_at)}
+
+
+@router.get("/blocked-terms")
+def list_blocked_terms(ctx: AdminContext = Depends(require("moderation.manage")), db: Session = Depends(get_db)):
+    rows = db.scalars(select(BlockedTerm).order_by(BlockedTerm.category, BlockedTerm.term)).all()
+    blocked_24h = db.scalar(
+        select(func.count()).select_from(AuditLog).where(
+            AuditLog.action == "community.blocked_language", AuditLog.created_at >= utcnow() - timedelta(days=1)
+        )
+    ) or 0
+    return ok([_term(t) for t in rows], blocked_last_24h=blocked_24h)
+
+
+@router.post("/blocked-terms", status_code=201)
+def add_blocked_term(body: BlockedTermIn, request: Request, ctx: AdminContext = Depends(require("moderation.manage")), db: Session = Depends(get_db)):
+    term = " ".join(body.term.lower().split())
+    t = db.scalar(select(BlockedTerm).where(BlockedTerm.term == term))
+    if t:
+        t.severity, t.category, t.is_active = body.severity, body.category, True
+    else:
+        t = BlockedTerm(term=term, severity=body.severity, category=body.category, created_by_id=ctx.user.id)
+        db.add(t)
+    db.flush()
+    audit(db, ctx.user.id, "moderation.term_added", "blocked_term", t.id, request, severity=body.severity)
+    db.commit()
+    term_cache.invalidate()
+    return ok(_term(t))
+
+
+@router.delete("/blocked-terms/{tid}")
+def delete_blocked_term(tid: int, request: Request, ctx: AdminContext = Depends(require("moderation.manage")), db: Session = Depends(get_db)):
+    t = db.get(BlockedTerm, tid)
+    if not t:
+        raise not_found("Term")
+    db.delete(t)
+    audit(db, ctx.user.id, "moderation.term_removed", "blocked_term", tid, request)
+    db.commit()
+    term_cache.invalidate()
+    return ok({"deleted": True})
+
+
+# ---------------------------------------------------------------------------
+# Sen. Philip Aduda profile
+# ---------------------------------------------------------------------------
+
+
+def get_profile(db: Session) -> PrincipalProfile:
+    p = db.scalar(select(PrincipalProfile).order_by(PrincipalProfile.id))
+    if not p:
+        p = PrincipalProfile()
+        db.add(p)
+        db.commit()
+    return p
+
+
+@router.put("/profile")
+def update_profile(body: ProfileIn, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+    p = get_profile(db)
+    data = body.model_dump()
+    for k, v in data.items():
+        setattr(p, k, v)
+    p.updated_by_id = ctx.user.id
+    audit(db, ctx.user.id, "profile.updated", "principal_profile", p.id, request)
+    db.commit()
+    return ok(ser.principal(p))
