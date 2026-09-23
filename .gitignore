@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+backend/nipam.db
+backend/uploads/
+backend/.env
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/dev-dist/
+*.log
+.env
+.env.local
