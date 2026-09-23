@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="NIPAM emblem">
+  <title>NIPAM emblem</title>
+  <circle cx="32" cy="32" r="31" fill="#063B66"/>
+  <circle cx="32" cy="32" r="27.2" fill="none" stroke="#9AA0A6" stroke-width="1.1" opacity=".75"/>
+  <path d="M13.5 41.5a18.5 18.5 0 0 1 37 0" fill="none" stroke="#079447" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="20.6" cy="28.2" r="3.4" fill="#079447"/>
+  <path d="M14.6 43.2c.6-6.4 3-9.8 6-9.8s5.4 3.4 6 9.8z" fill="#079447"/>
+  <circle cx="43.4" cy="28.2" r="3.4" fill="#079447"/>
+  <path d="M37.4 43.2c.6-6.4 3-9.8 6-9.8s5.4 3.4 6 9.8z" fill="#079447"/>
+  <circle cx="32" cy="22.4" r="4.3" fill="#FFFFFF"/>
+  <path d="M23.8 43.2c.8-8.6 4-12.9 8.2-12.9s7.4 4.3 8.2 12.9z" fill="#FFFFFF"/>
+  <rect x="15" y="45.2" width="34" height="2.4" rx="1.2" fill="#9AA0A6"/>
+  <path d="M32 9.6l1.1 2.3 2.5.3-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.7 2.5-.3z" fill="#FFFFFF" opacity=".9"/>
+</svg>

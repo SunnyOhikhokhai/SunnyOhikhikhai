@@ -1,0 +1,36 @@
+# Production-style stack: PostgreSQL + FastAPI + nginx-served SPA.
+#   cp .env.example .env   # set strong secrets first
+#   docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: nipam
+      POSTGRES_USER: nipam
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nipam"]
+      interval: 5s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      NIPAM_DATABASE_URL: postgresql+psycopg://nipam:${POSTGRES_PASSWORD}@db:5432/nipam
+    volumes: [uploads:/app/uploads]
+    depends_on:
+      db: { condition: service_healthy }
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports: ["8080:80"]
+    depends_on: [api]
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  uploads:

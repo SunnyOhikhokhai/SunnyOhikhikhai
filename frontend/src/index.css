@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+  h1, h2, h3, h4 { @apply font-display tracking-tight text-navy; }
+  :focus-visible { @apply outline-none ring-2 ring-green-500 ring-offset-2; }
+  ::selection { @apply bg-green-100 text-navy-900; }
+}
+
+@layer components {
+  .section { @apply py-16 sm:py-20 lg:py-24; }
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-[0.16em] text-green-600; }
+  .prose-nipam { @apply max-w-none text-[1.0625rem] leading-relaxed text-slate-700; }
+  .prose-nipam h2 { @apply mb-3 mt-8 text-2xl font-bold; }
+  .prose-nipam h3 { @apply mb-2 mt-6 text-xl font-semibold; }
+  .prose-nipam p { @apply my-4; }
+  .prose-nipam ul { @apply my-4 list-disc space-y-1.5 pl-6; }
+  .prose-nipam ol { @apply my-4 list-decimal space-y-1.5 pl-6; }
+  .prose-nipam a { @apply font-medium text-green-600 underline underline-offset-2 hover:text-green-700; }
+  .prose-nipam strong { @apply font-semibold text-navy; }
+  .prose-nipam blockquote { @apply my-6 border-l-4 border-green-500 bg-surface px-5 py-3 italic text-slate-700; }
+  .skip-link { @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-navy focus:shadow-lift; }
+}
+
+@layer utilities {
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
