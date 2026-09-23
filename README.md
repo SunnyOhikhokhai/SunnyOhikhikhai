@@ -103,7 +103,7 @@ CI (`.github/workflows/ci.yml`) runs lint, the API tests on SQLite and PostgreSQ
 ## Before launch — to be supplied by NIPAM
 
 - **Official logo:** the current mark in `frontend/src/components/brand/Logo.tsx` and `frontend/public/brand/*.svg` is a placeholder based on the brief. Replace it, then run `npm run icons` to regenerate the favicon, PWA icons, splash screens and Open Graph image.
-- **Sen. Philip Aduda's profile:** add his official photo, title, biography, timeline (with sources) and official channels under **Admin → Sen. Aduda profile**. It currently shows clearly marked placeholders.
+- **Sen. Philip Aduda content:** run `python -m app.seed --aduda` to load sourced project records and fill his profile (see `docs/aduda-research.md`), then add his official photo, title, biography, timeline (with sources) and official channels under **Admin → Sen. Aduda profile**. It currently shows clearly marked placeholders.
 - **Verified content:** replace the sample records, events and news, or run the seed without `--demo`.
 - **Social media links** in `SiteFooter.tsx`, and contact details.
 - **Legal review:** have the Privacy Policy, Terms and Guidelines (`frontend/src/pages/Legal.tsx`) reviewed against the Nigeria Data Protection Act 2023.

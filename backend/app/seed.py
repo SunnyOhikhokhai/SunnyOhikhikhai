@@ -447,6 +447,7 @@ def seed_demo(db: Session, admin: User) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--demo", action="store_true", help="add clearly-labelled sample content")
+    parser.add_argument("--aduda", action="store_true", help="add sourced records about Sen. Philip Aduda and fill his profile")
     parser.add_argument("--create-tables", action="store_true", help="create tables without Alembic (dev only)")
     args = parser.parse_args()
     if args.create_tables:
@@ -459,6 +460,11 @@ def main() -> None:
             if get_settings().is_production:
                 raise SystemExit("Refusing to seed demo content in production.")
             seed_demo(db, admin)
+        if args.aduda:
+            from .aduda_content import apply
+
+            result = apply(db)
+            print(f"Sen. Aduda content: {result['records_added']} records added; profile updated: {result['profile_updated']}")
     print("Seed complete.")
 
 
