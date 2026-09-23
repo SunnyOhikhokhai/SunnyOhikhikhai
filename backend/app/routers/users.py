@@ -28,6 +28,7 @@ from ..responses import ok
 from ..schemas import ChangePasswordIn, DeleteAccountIn, PreferencesIn, ProfileUpdateIn
 from ..security import SESSION_COOKIE, hash_password, validate_password_strength, verify_password
 from ..services.audit import audit
+from ..services.moderation import scan
 from .auth import revoke_all_sessions
 
 router = APIRouter(prefix="/api/users", tags=["users"])
@@ -42,6 +43,9 @@ def get_me(user: User = Depends(get_current_user)):
 @router.patch("/me", dependencies=[Depends(csrf_protect)])
 def update_me(body: ProfileUpdateIn, request: Request, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     data = body.model_dump(exclude_unset=True)
+    lang = scan(db, data.get("full_name"), data.get("display_name"), data.get("bio"), data.get("community"), data.get("ward"))
+    if not lang.clean:
+        raise ApiError(422, "abusive_language", "Your profile contains language that isn't allowed. Please choose respectful wording.")
     if user.profile is None:
         user.profile = Profile()
     if "full_name" in data and data["full_name"]:

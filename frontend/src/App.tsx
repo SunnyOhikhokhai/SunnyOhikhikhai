@@ -5,6 +5,7 @@ import { PageFallback, PublicLayout, ScrollToTop } from "./components/layout/Pub
 import Home from "./pages/Home";
 
 const About = lazy(() => import("./pages/About"));
+const Aduda = lazy(() => import("./pages/Aduda"));
 const OurRecord = lazy(() => import("./pages/OurRecord"));
 const RecordDetail = lazy(() => import("./pages/RecordDetail"));
 const AreaCouncils = lazy(() => import("./pages/AreaCouncils"));
@@ -45,6 +46,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
+          <Route path="philip-aduda" element={<Aduda />} />
           <Route path="our-record" element={<OurRecord />} />
           <Route path="our-record/:slug" element={<RecordDetail />} />
           <Route path="area-councils" element={<AreaCouncils />} />

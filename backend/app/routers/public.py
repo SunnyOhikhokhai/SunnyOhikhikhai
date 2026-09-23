@@ -99,7 +99,7 @@ def contact(body: ContactIn, request: Request, db: Session = Depends(get_db)):
 
 
 STATIC_PATHS = [
-    "/", "/about", "/our-record", "/area-councils", "/news", "/events", "/community", "/contact",
+    "/", "/philip-aduda", "/about", "/our-record", "/area-councils", "/news", "/events", "/community", "/contact",
     "/join", "/privacy", "/terms", "/community-guidelines",
 ]
 

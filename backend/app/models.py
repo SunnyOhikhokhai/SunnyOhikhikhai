@@ -593,3 +593,46 @@ class ContactMessage(Base):
     message: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20), default="new")
     created_at: Mapped[datetime] = mapped_column(UTCDateTime(), default=utcnow, index=True)
+
+
+# ---------------------------------------------------------------------------
+# Moderation word list and the principal's profile
+# ---------------------------------------------------------------------------
+
+
+class BlockedTerm(TimestampMixin, Base):
+    """Words/phrases filtered from community content and public profile fields.
+
+    ``block`` rejects the post outright; ``review`` publishes it hidden and
+    places it in the moderation queue."""
+
+    __tablename__ = "blocked_terms"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    term: Mapped[str] = mapped_column(String(120), unique=True)
+    severity: Mapped[str] = mapped_column(String(10), default="block")  # block | review
+    category: Mapped[str] = mapped_column(String(30), default="insult")  # insult | profanity | hate | threat
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+
+
+class PrincipalProfile(TimestampMixin, Base):
+    """Single-row profile of Sen. Philip Aduda, edited by administrators.
+
+    Factual fields should only contain verified information; timeline
+    entries carry their own source."""
+
+    __tablename__ = "principal_profile"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), default="Sen. Philip Aduda")
+    title: Mapped[str] = mapped_column(String(200), default="")
+    tagline: Mapped[str] = mapped_column(String(300), default="")
+    summary: Mapped[str] = mapped_column(Text, default="")
+    biography: Mapped[str] = mapped_column(Text, default="")
+    photo_url: Mapped[str | None] = mapped_column(String(500))
+    photo_alt: Mapped[str | None] = mapped_column(String(300))
+    timeline: Mapped[list] = mapped_column(JSON, default=list)  # [{year, title, description, source}]
+    gallery: Mapped[list] = mapped_column(JSON, default=list)  # [{url, alt, caption}]
+    links: Mapped[list] = mapped_column(JSON, default=list)  # [{label, url}]
+    updated_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))

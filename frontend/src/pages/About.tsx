@@ -26,7 +26,7 @@ export default function About() {
       <PageHeader
         eyebrow="About NIPAM"
         title="Non-Indigenes for Philip Aduda Movement"
-        description="NIPAM is a voluntary community of residents and members across the Federal Capital Territory, focused on accessible information and constructive civic participation."
+        description="NIPAM is a voluntary support group for Sen. Philip Aduda, uniting residents and supporters across the Federal Capital Territory."
         crumbs={[{ to: "/", label: "Home" }, { label: "About" }]}
       />
 
@@ -34,25 +34,25 @@ export default function About() {
         <div className="container grid gap-12 lg:grid-cols-2">
           <div>
             <p className="eyebrow mb-3">What NIPAM is</p>
-            <h2 className="text-3xl font-extrabold">A civic community for FCT residents</h2>
+            <h2 className="text-3xl font-extrabold">A support group for Sen. Philip Aduda</h2>
             <div className="prose-nipam mt-5">
               <p>
-                The Federal Capital Territory is home to people from every part of Nigeria. NIPAM exists to connect residents — including those
-                who are not indigenes of the Territory — around shared community life, reliable information and constructive participation.
+                The Federal Capital Territory is home to people from every part of Nigeria. NIPAM — Non-Indigenes for Philip Aduda Movement —
+                unites residents, including those who are not indigenes of the Territory, in support of <Link to="/philip-aduda">Sen. Philip Aduda</Link>.
               </p>
               <p>
-                This platform is NIPAM's digital home. It brings together news and announcements, events, Area Council information, a
-                documented public record library and a moderated community space.
+                This platform is the movement's digital home: news and announcements, events, Area Council pages, a documented record of his
+                work and a moderated community where supporters connect.
               </p>
             </div>
           </div>
           <div>
             <p className="eyebrow mb-3">Why it exists</p>
-            <h2 className="text-3xl font-extrabold">Information people can trust</h2>
+            <h2 className="text-3xl font-extrabold">Spreading his name, far and wide</h2>
             <div className="prose-nipam mt-5">
               <p>
-                Residents deserve clear, accessible information about their communities. NIPAM documents public records with their sources and
-                labels each item so that verified information, announcements, opinion and user-generated content are never confused.
+                NIPAM gives Sen. Philip Aduda wider coverage across all six Area Councils — sharing his record, his events and his message
+                with every community. His record is documented with sources, so supporters can share it with confidence.
               </p>
               <p>
                 Membership is voluntary. NIPAM does not infer anyone's views from ethnicity, religion, indigene status or other personal

@@ -283,3 +283,19 @@ def admin_member(u: User, include_contact: bool) -> dict:
         d["email"] = u.email
         d["phone"] = u.phone
     return d
+
+
+def principal(p) -> dict:
+    return {
+        "name": p.name,
+        "title": p.title,
+        "tagline": p.tagline,
+        "summary": p.summary,
+        "biography": p.biography,
+        "photo_url": p.photo_url,
+        "photo_alt": p.photo_alt,
+        "timeline": p.timeline or [],
+        "gallery": p.gallery or [],
+        "links": p.links or [],
+        "updated_at": iso(p.updated_at),
+    }

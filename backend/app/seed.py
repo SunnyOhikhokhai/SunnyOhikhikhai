@@ -31,6 +31,7 @@ from .models import (
     NewsCategory,
     NotificationPreference,
     Permission,
+    PrincipalProfile,
     Profile,
     Project,
     ProjectCategory,
@@ -40,6 +41,7 @@ from .models import (
 )
 from .rbac import PERMISSIONS, ROLES
 from .security import hash_password
+from .services.moderation import seed_default_terms
 
 PLACEHOLDER = "[VERIFIED PROJECT INFORMATION TO BE ADDED]"
 
@@ -178,6 +180,36 @@ def seed_reference(db: Session) -> None:
         if not db.scalar(select(DiscussionCategory).where(DiscussionCategory.slug == slug)):
             db.add(DiscussionCategory(slug=slug, name=name, description=desc, sort_order=i))
     db.commit()
+    seed_default_terms(db)
+    if not db.scalar(select(PrincipalProfile.id)):
+        db.add(
+            PrincipalProfile(
+                name="Sen. Philip Aduda",
+                title="[OFFICIAL TITLE TO BE CONFIRMED]",
+                tagline="[OFFICIAL TAGLINE TO BE ADDED]",
+                summary=(
+                    "NIPAM is a support movement for Sen. Philip Aduda. His verified biography, "
+                    "career milestones and photographs will appear here once supplied by the NIPAM team. "
+                    "[VERIFIED BIOGRAPHY TO BE ADDED]"
+                ),
+                biography=(
+                    "## Biography\n\n[VERIFIED BIOGRAPHY TO BE ADDED]\n\n"
+                    "## Public service\n\n[VERIFIED DETAILS OF OFFICES HELD, WITH DATES AND SOURCES, TO BE ADDED]\n\n"
+                    "## Community work\n\n[VERIFIED INFORMATION TO BE ADDED]"
+                ),
+                timeline=[
+                    {
+                        "year": "[YEAR]",
+                        "title": "[MILESTONE TO BE ADDED]",
+                        "description": "Add verified career milestones from the admin dashboard, each with a source.",
+                        "source": "[SOURCE TO BE ADDED]",
+                    }
+                ],
+                gallery=[],
+                links=[],
+            )
+        )
+        db.commit()
 
 
 def _make_user(db: Session, email: str, password: str, name: str, council_slug: str, display: str | None = None) -> User:

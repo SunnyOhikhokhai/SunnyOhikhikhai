@@ -12,6 +12,7 @@ import {
   Menu,
   Newspaper,
   ShieldAlert,
+  Star,
   UserCog,
   Users,
 } from "lucide-react";
@@ -28,6 +29,7 @@ const Overview = lazy(() => import("./Overview"));
 const Analytics = lazy(() => import("./Analytics"));
 const Members = lazy(() => import("./Members"));
 const Records = lazy(() => import("./Records"));
+const ProfileAdmin = lazy(() => import("./ProfileAdmin"));
 const NewsAdmin = lazy(() => import("./NewsAdmin"));
 const EventsAdmin = lazy(() => import("./EventsAdmin"));
 const Announcements = lazy(() => import("./Announcements"));
@@ -41,6 +43,7 @@ const NAV = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, perms: ["analytics.view", "members.view"], end: true },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3, perms: ["analytics.view"] },
   { to: "/admin/members", label: "Members", icon: Users, perms: ["members.view", "members.suspend"] },
+  { to: "/admin/profile", label: "Sen. Aduda profile", icon: Star, perms: ["records.manage"], group: "Content" },
   { to: "/admin/records", label: "Our Record", icon: FileText, perms: ["records.manage"], group: "Content" },
   { to: "/admin/news", label: "News", icon: Newspaper, perms: ["news.manage"], group: "Content" },
   { to: "/admin/events", label: "Events", icon: CalendarDays, perms: ["events.manage"], group: "Content" },
@@ -135,6 +138,7 @@ export default function AdminApp() {
             <Route index element={<Home />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="members" element={<Members />} />
+            <Route path="profile" element={<ProfileAdmin />} />
             <Route path="records/*" element={<Records />} />
             <Route path="news/*" element={<NewsAdmin />} />
             <Route path="events/*" element={<EventsAdmin />} />

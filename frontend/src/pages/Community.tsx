@@ -28,11 +28,15 @@ function NewDiscussion({ open, onOpenChange, defaultCouncil }: { open: boolean; 
   const [errors, setErrors] = useState<Record<string, string>>({});
   useEffect(() => setForm((f) => ({ ...f, area_council: defaultCouncil ?? f.area_council })), [defaultCouncil]);
   const m = useMutation({
-    mutationFn: () => api.post<{ data: DiscussionItem }>("/api/discussions", { ...form, area_council: form.area_council || null }),
+    mutationFn: () => api.post<{ data: DiscussionItem & { held_for_review: boolean } }>("/api/discussions", { ...form, area_council: form.area_council || null }),
     onSuccess: (res) => {
-      toast.success("Your discussion has been posted.");
       qc.invalidateQueries({ queryKey: ["discussions"] });
       onOpenChange(false);
+      if (res.data.held_for_review) {
+        toast.info("Thanks — your post will appear once a moderator has reviewed its wording.");
+        return;
+      }
+      toast.success("Your discussion has been posted.");
       navigate(`/community/${res.data.id}`);
     },
     onError: (e: Error) => {
@@ -174,6 +178,7 @@ export default function Community() {
               <li>• No impersonation or doxxing</li>
               <li>• Don't share personal information</li>
               <li>• Don't present unverified claims as fact</li>
+              <li>• Insults and abusive language are blocked automatically</li>
             </ul>
             <Link to="/community-guidelines" className="mt-4 inline-block text-sm font-semibold text-green-300 hover:text-white">Read the full guidelines →</Link>
           </div>

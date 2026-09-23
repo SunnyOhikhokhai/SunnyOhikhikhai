@@ -316,3 +316,43 @@ class AdminAssignIn(Clean):
     email: EmailStr
     role: Literal["super_admin", "content_admin", "area_council_admin", "moderator", "analyst"]
     area_council: str | None = Field(default=None, max_length=40)
+
+
+class BlockedTermIn(Clean):
+    term: str = Field(min_length=2, max_length=120)
+    severity: Literal["block", "review"] = "block"
+    category: Literal["insult", "profanity", "hate", "threat", "other"] = "insult"
+
+
+class TimelineItemIn(Clean):
+    year: str = Field(default="", max_length=20)
+    title: str = Field(min_length=2, max_length=200)
+    description: str = Field(default="", max_length=2000)
+    source: str = Field(default="", max_length=300)
+
+
+class GalleryItemIn(Clean):
+    url: str = Field(max_length=500)
+    alt: str = Field(default="", max_length=300)
+    caption: str = Field(default="", max_length=300)
+    _url = field_validator("url")(classmethod(lambda cls, v: _check_url(v)))
+
+
+class LinkIn(Clean):
+    label: str = Field(min_length=1, max_length=80)
+    url: str = Field(max_length=500)
+    _url = field_validator("url")(classmethod(lambda cls, v: _check_url(v)))
+
+
+class ProfileIn(Clean):
+    name: str = Field(min_length=2, max_length=120)
+    title: str = Field(default="", max_length=200)
+    tagline: str = Field(default="", max_length=300)
+    summary: str = Field(default="", max_length=2000)
+    biography: str = Field(default="", max_length=50000)
+    photo_url: str | None = Field(default=None, max_length=500)
+    photo_alt: str | None = Field(default=None, max_length=300)
+    timeline: list[TimelineItemIn] = Field(default_factory=list, max_length=100)
+    gallery: list[GalleryItemIn] = Field(default_factory=list, max_length=60)
+    links: list[LinkIn] = Field(default_factory=list, max_length=20)
+    _url = field_validator("photo_url")(classmethod(lambda cls, v: _check_url(v)))
