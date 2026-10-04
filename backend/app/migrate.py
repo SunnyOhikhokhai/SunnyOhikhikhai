@@ -9,10 +9,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sqlalchemy import inspect
-
 from alembic import command
 from alembic.config import Config
+from sqlalchemy import inspect
 
 from .database import engine
 
