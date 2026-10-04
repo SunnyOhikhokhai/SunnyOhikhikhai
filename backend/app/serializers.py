@@ -3,20 +3,55 @@ member's own account) and ``admin_member`` (for holders of members.view)."""
 
 from __future__ import annotations
 
+from sqlalchemy import select
+
 from .models import (
     AreaCouncil,
     Comment,
+    ContentSource,
     Discussion,
+    ElectionRecord,
     Event,
+    LegislativeRecord,
     News,
     Notification,
     Project,
+    Source,
     User,
 )
 
 
 def iso(dt):
     return dt.isoformat() if dt else None
+
+
+def source(s: Source) -> dict:
+    return {
+        "id": s.id,
+        "name": s.name,
+        "title": s.title,
+        "source_type": s.source_type,
+        "url": s.url,
+        "publication_date": iso(s.publication_date),
+        "accessed_date": iso(s.accessed_date),
+        "reliability_level": s.reliability_level,
+        "notes": s.notes,
+    }
+
+
+def linked_sources(db, content_type: str, ids: list[int]) -> dict[int, list[dict]]:
+    """Sources cited by each item, keyed by item id, in citation order."""
+    out: dict[int, list[dict]] = {i: [] for i in ids}
+    if not ids:
+        return out
+    rows = db.scalars(
+        select(ContentSource)
+        .where(ContentSource.content_type == content_type, ContentSource.content_id.in_(ids))
+        .order_by(ContentSource.sort_order, ContentSource.id)
+    ).all()
+    for r in rows:
+        out[r.content_id].append({**source(r.source), "note": r.note})
+    return out
 
 
 def council_ref(c: AreaCouncil | None):
@@ -111,11 +146,19 @@ def project_card(p: Project) -> dict:
         "record_date": iso(p.record_date),
         "summary": p.summary,
         "verification_status": p.verification_status,
+        "project_status": p.project_status,
+        "status_note": p.status_note,
+        "category_label": p.category_label,
+        "reported_cost": p.reported_cost,
+        "reported_length": p.reported_length,
         "is_featured": p.is_featured,
         "is_demo": p.is_demo,
         "image": {"url": cover.url, "alt": cover.alt} if cover else None,
         "source_count": len(p.sources),
+        "primary_source": (p.sources[0].publisher or p.sources[0].title) if p.sources else None,
         "published_at": iso(p.published_at),
+        "updated_at": iso(p.updated_at),
+        "last_verified_at": iso(p.last_verified_at),
     }
 
 
@@ -135,11 +178,12 @@ def project_detail(p: Project) -> dict:
                 "url": s.url,
                 "published_on": iso(s.published_on),
                 "notes": s.notes,
+                "source_type": s.source.source_type if s.source else None,
+                "reliability_level": s.source.reliability_level if s.source else None,
             }
             for s in p.sources
         ],
         "view_count": p.view_count,
-        "updated_at": iso(p.updated_at),
     }
 
 
@@ -156,6 +200,7 @@ def news_card(n: News) -> dict:
         "category": {"slug": n.category.slug, "name": n.category.name},
         "area_council": council_ref(n.area_council),
         "content_label": n.content_label,
+        "verification_status": n.verification_status,
         "image_url": n.image_url,
         "image_alt": n.image_alt,
         "author_name": n.author_name,
@@ -165,12 +210,71 @@ def news_card(n: News) -> dict:
     }
 
 
-def news_detail(n: News) -> dict:
-    return {**news_card(n), "body": n.body, "source_note": n.source_note, "updated_at": iso(n.updated_at)}
+def news_detail(n: News, sources: list[dict] | None = None) -> dict:
+    return {
+        **news_card(n),
+        "body": n.body,
+        "source_note": n.source_note,
+        "sources": sources or [],
+        "updated_at": iso(n.updated_at),
+    }
 
 
-def news_admin(n: News) -> dict:
-    return {**news_detail(n), "status": n.status, "view_count": n.view_count, "created_at": iso(n.created_at)}
+def news_admin(n: News, sources: list[dict] | None = None) -> dict:
+    return {**news_detail(n, sources), "status": n.status, "view_count": n.view_count, "created_at": iso(n.created_at)}
+
+
+def legislation(r: LegislativeRecord, sources: list[dict] | None = None) -> dict:
+    return {
+        "id": r.id,
+        "slug": r.slug,
+        "title": r.title,
+        "bill_number": r.bill_number,
+        "category": r.category,
+        "year": r.year,
+        "sponsor": r.sponsor,
+        "description": r.description,
+        "legislative_stage": r.legislative_stage,
+        "official_status": r.official_status,
+        "verification_status": r.verification_status,
+        "verification_note": r.verification_note,
+        "is_featured": r.is_featured,
+        "sources": sources or [],
+        "published_at": iso(r.published_at),
+        "updated_at": iso(r.updated_at),
+        "last_verified_at": iso(r.last_verified_at),
+    }
+
+
+def legislation_admin(r: LegislativeRecord, sources: list[dict] | None = None) -> dict:
+    return {**legislation(r, sources), "status": r.status, "created_at": iso(r.created_at)}
+
+
+def election(r: ElectionRecord, sources: list[dict] | None = None) -> dict:
+    return {
+        "id": r.id,
+        "slug": r.slug,
+        "year": r.year,
+        "title": r.title,
+        "constituency": r.constituency,
+        "candidate": r.candidate,
+        "party": r.party,
+        "outcome": r.outcome,
+        "votes": r.votes,
+        "votes_note": r.votes_note,
+        "election_date": iso(r.election_date),
+        "summary": r.summary,
+        "verification_status": r.verification_status,
+        "verification_note": r.verification_note,
+        "is_current": r.is_current,
+        "sources": sources or [],
+        "updated_at": iso(r.updated_at),
+        "last_verified_at": iso(r.last_verified_at),
+    }
+
+
+def election_admin(r: ElectionRecord, sources: list[dict] | None = None) -> dict:
+    return {**election(r, sources), "status": r.status, "created_at": iso(r.created_at)}
 
 
 def event_card(e: Event, registered_count: int | None = None, is_registered: bool | None = None) -> dict:
@@ -294,6 +398,16 @@ def principal(p) -> dict:
         "biography": p.biography,
         "photo_url": p.photo_url,
         "photo_alt": p.photo_alt,
+        "photo_caption": p.photo_caption,
+        "photo_source_name": p.photo_source_name,
+        "photo_source_url": p.photo_source_url,
+        "photo_usage": p.photo_usage,
+        "photo_rights_status": p.photo_rights_status,
+        "badges": p.badges or [],
+        "facts": p.facts or [],
+        "metrics": p.metrics or [],
+        "metrics_note": p.metrics_note,
+        "metrics_source_url": p.metrics_source_url,
         "timeline": p.timeline or [],
         "gallery": p.gallery or [],
         "links": p.links or [],

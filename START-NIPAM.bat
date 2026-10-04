@@ -1,6 +1,14 @@
 @echo off
+rem Run from a temporary copy, so that updating this file (git pull) while it
+rem runs cannot disturb Windows reading it.
+if /i not "%~1"=="--run" (
+  copy /y "%~f0" "%TEMP%\nipam-start.bat" >nul
+  call "%TEMP%\nipam-start.bat" --run "%~dp0"
+  exit /b
+)
+set "ROOT=%~2"
 title NIPAM - Starting up
-cd /d "%~dp0"
+cd /d "%ROOT%"
 echo.
 echo  ==========================================
 echo    NIPAM - starting the platform
@@ -25,8 +33,17 @@ if errorlevel 1 (
   exit /b 1
 )
 
+if exist "%ROOT%.git" (
+  where git >nul 2>nul
+  if not errorlevel 1 (
+    echo  Checking for updates...
+    git -C "%ROOT%." pull --ff-only
+    if errorlevel 1 echo  Could not update - continuing with the current version.
+  )
+)
+
 echo  [1/4] Preparing the backend (first run takes a few minutes)...
-cd /d "%~dp0backend"
+cd /d "%ROOT%backend"
 if not exist ".venv\Scripts\python.exe" (
   python -m venv .venv
   if errorlevel 1 goto :failed
@@ -35,19 +52,17 @@ if not exist ".venv\Scripts\python.exe" (
 if errorlevel 1 goto :failed
 
 echo  [2/4] Preparing the database and content...
-".venv\Scripts\python.exe" -m app.seed --create-tables --demo --aduda
+".venv\Scripts\python.exe" -m app.seed --create-tables --demo --content-pack
 if errorlevel 1 goto :failed
 
 echo  [3/4] Preparing the website (first run takes a few minutes)...
-cd /d "%~dp0frontend"
-if not exist "node_modules" (
-  call npm install --no-audit --no-fund
-  if errorlevel 1 goto :failed
-)
+cd /d "%ROOT%frontend"
+call npm install --no-audit --no-fund --loglevel=error
+if errorlevel 1 goto :failed
 
 echo  [4/4] Starting NIPAM...
-start "NIPAM backend - keep this window open" /d "%~dp0backend" cmd /k ".venv\Scripts\python.exe -m uvicorn app.main:app --port 8000"
-start "NIPAM website - keep this window open" /d "%~dp0frontend" cmd /k "npm run dev"
+start "NIPAM backend - keep this window open" /d "%ROOT%backend" cmd /k ".venv\Scripts\python.exe -m uvicorn app.main:app --port 8000"
+start "NIPAM website - keep this window open" /d "%ROOT%frontend" cmd /k "npm run dev"
 
 echo.
 echo  Opening http://localhost:5173 in your browser...

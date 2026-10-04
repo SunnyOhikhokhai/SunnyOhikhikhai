@@ -217,7 +217,77 @@ class DocumentIn(Clean):
     _url = field_validator("url")(classmethod(lambda cls, v: _check_url(v)))
 
 
-VerificationStatus = Literal["unverified", "pending_review", "verified", "disputed"]
+VerificationStatus = Literal["verified", "reported", "self_reported", "pending", "disputed"]
+ProjectStatus = Literal["ongoing", "nearing_completion", "commissioned", "completed", "reported", "pending"]
+LegislativeStage = Literal[
+    "proposed",
+    "introduced",
+    "second_reading",
+    "committee_stage",
+    "passed_chamber",
+    "assented",
+    "self_reported_passed",
+    "pending",
+]
+SourceType = Literal["inec", "national_assembly", "fcta", "official_site", "party", "news_agency", "news", "legal", "other"]
+Reliability = Literal["official", "party", "self", "news", "other"]
+
+
+class LinkedSourceIn(Clean):
+    """A source cited by a legislative record, election record or article.
+    Matched to the source registry by URL (or by name when there is no URL)."""
+
+    name: str = Field(min_length=2, max_length=200)
+    url: str | None = Field(default=None, max_length=500)
+    title: str | None = Field(default=None, max_length=300)
+    note: str | None = Field(default=None, max_length=300)
+    _url = field_validator("url")(classmethod(lambda cls, v: _check_url(v)))
+
+
+class SourceRegistryIn(Clean):
+    name: str = Field(min_length=2, max_length=200)
+    title: str | None = Field(default=None, max_length=300)
+    source_type: SourceType = "news"
+    url: str | None = Field(default=None, max_length=500)
+    publication_date: date | None = None
+    accessed_date: date | None = None
+    reliability_level: Reliability = "news"
+    notes: str | None = Field(default=None, max_length=1000)
+    _url = field_validator("url")(classmethod(lambda cls, v: _check_url(v)))
+
+
+class LegislationIn(Clean):
+    title: str = Field(min_length=4, max_length=250)
+    bill_number: str | None = Field(default=None, max_length=40)
+    category: str = Field(min_length=2, max_length=80)
+    year: int | None = Field(default=None, ge=1976, le=2100)
+    sponsor: str = Field(default="", max_length=160)
+    description: str = Field(default="", max_length=20000)
+    legislative_stage: LegislativeStage = "pending"
+    official_status: str | None = Field(default=None, max_length=300)
+    verification_status: VerificationStatus = "pending"
+    verification_note: str | None = Field(default=None, max_length=500)
+    is_featured: bool = False
+    last_verified_at: datetime | None = None
+    sources: list[LinkedSourceIn] = Field(default_factory=list, max_length=20)
+
+
+class ElectionIn(Clean):
+    year: int = Field(ge=1976, le=2100)
+    title: str = Field(min_length=4, max_length=200)
+    constituency: str = Field(default="", max_length=160)
+    candidate: str = Field(default="", max_length=160)
+    party: str = Field(default="", max_length=40)
+    outcome: str = Field(default="", max_length=300)
+    votes: int | None = Field(default=None, ge=0)
+    votes_note: str | None = Field(default=None, max_length=300)
+    election_date: date | None = None
+    summary: str = Field(default="", max_length=5000)
+    verification_status: VerificationStatus = "pending"
+    verification_note: str | None = Field(default=None, max_length=500)
+    is_current: bool = False
+    last_verified_at: datetime | None = None
+    sources: list[LinkedSourceIn] = Field(default_factory=list, max_length=20)
 
 
 class ProjectIn(Clean):
@@ -229,8 +299,14 @@ class ProjectIn(Clean):
     record_date: date | None = None
     summary: str = Field(default="", max_length=400)
     description: str = Field(default="", max_length=20000)
-    verification_status: VerificationStatus = "unverified"
+    verification_status: VerificationStatus = "pending"
     verification_note: str | None = Field(default=None, max_length=500)
+    project_status: ProjectStatus = "pending"
+    status_note: str | None = Field(default=None, max_length=300)
+    category_label: str | None = Field(default=None, max_length=120)
+    reported_cost: str | None = Field(default=None, max_length=120)
+    reported_length: str | None = Field(default=None, max_length=60)
+    last_verified_at: datetime | None = None
     is_featured: bool = False
     is_demo: bool = False
     sources: list[SourceIn] = Field(default_factory=list, max_length=20)
@@ -249,6 +325,8 @@ class NewsIn(Clean):
     area_council: str | None = Field(default=None, max_length=40)
     content_label: ContentLabel = "update"
     source_note: str | None = Field(default=None, max_length=400)
+    verification_status: VerificationStatus | None = None
+    sources: list[LinkedSourceIn] = Field(default_factory=list, max_length=20)
     image_url: str | None = Field(default=None, max_length=500)
     image_alt: str | None = Field(default=None, max_length=300)
     author_name: str = Field(default="NIPAM Editorial Team", max_length=120)
@@ -329,13 +407,40 @@ class TimelineItemIn(Clean):
     title: str = Field(min_length=2, max_length=200)
     description: str = Field(default="", max_length=2000)
     source: str = Field(default="", max_length=300)
+    source_name: str = Field(default="", max_length=200)
+    verification: VerificationStatus = "pending"
 
 
 class GalleryItemIn(Clean):
     url: str = Field(max_length=500)
     alt: str = Field(default="", max_length=300)
     caption: str = Field(default="", max_length=300)
+    source_name: str = Field(default="", max_length=200)
+    source_url: str = Field(default="", max_length=500)
+    date: str = Field(default="", max_length=40)
+    usage_rights_status: str = Field(default="", max_length=300)
     _url = field_validator("url")(classmethod(lambda cls, v: _check_url(v)))
+
+
+class SourcedItemIn(Clean):
+    verification: VerificationStatus = "pending"
+    source_name: str = Field(default="", max_length=200)
+    source_url: str = Field(default="", max_length=500)
+
+
+class BadgeIn(SourcedItemIn):
+    label: str = Field(min_length=2, max_length=200)
+
+
+class FactIn(SourcedItemIn):
+    label: str = Field(min_length=2, max_length=120)
+    value: str = Field(min_length=1, max_length=500)
+    note: str = Field(default="", max_length=500)
+
+
+class MetricIn(Clean):
+    value: str = Field(min_length=1, max_length=20)
+    label: str = Field(min_length=2, max_length=80)
 
 
 class LinkIn(Clean):
@@ -355,4 +460,14 @@ class ProfileIn(Clean):
     timeline: list[TimelineItemIn] = Field(default_factory=list, max_length=100)
     gallery: list[GalleryItemIn] = Field(default_factory=list, max_length=60)
     links: list[LinkIn] = Field(default_factory=list, max_length=20)
-    _url = field_validator("photo_url")(classmethod(lambda cls, v: _check_url(v)))
+    photo_caption: str | None = Field(default=None, max_length=300)
+    photo_source_name: str | None = Field(default=None, max_length=200)
+    photo_source_url: str | None = Field(default=None, max_length=500)
+    photo_usage: str | None = Field(default=None, max_length=200)
+    photo_rights_status: str | None = Field(default=None, max_length=300)
+    badges: list[BadgeIn] = Field(default_factory=list, max_length=10)
+    facts: list[FactIn] = Field(default_factory=list, max_length=40)
+    metrics: list[MetricIn] = Field(default_factory=list, max_length=12)
+    metrics_note: str | None = Field(default=None, max_length=300)
+    metrics_source_url: str | None = Field(default=None, max_length=500)
+    _url = field_validator("photo_url", "photo_source_url", "metrics_source_url")(classmethod(lambda cls, v: _check_url(v)))

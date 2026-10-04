@@ -7,7 +7,7 @@ RECORD = {
     "location": "Kwali",
     "summary": "Test record",
     "description": "Details",
-    "verification_status": "unverified",
+    "verification_status": "pending",
     "sources": [],
     "images": [],
     "documents": [],

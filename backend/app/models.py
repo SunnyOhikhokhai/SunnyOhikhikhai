@@ -308,9 +308,16 @@ class Project(TimestampMixin, SoftDeleteMixin, Base):
     record_date: Mapped[date | None] = mapped_column(Date)
     summary: Mapped[str] = mapped_column(String(400), default="")
     description: Mapped[str] = mapped_column(Text, default="")
-    # unverified | pending_review | verified | disputed
-    verification_status: Mapped[str] = mapped_column(String(20), default="unverified", index=True)
+    # verified | reported | self_reported | pending | disputed (see VERIFICATION_STATUSES)
+    verification_status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     verification_note: Mapped[str | None] = mapped_column(String(500))
+    # ongoing | nearing_completion | commissioned | completed | reported | pending
+    project_status: Mapped[str] = mapped_column(String(30), default="pending", index=True)
+    status_note: Mapped[str | None] = mapped_column(String(300))  # the source's own wording
+    category_label: Mapped[str | None] = mapped_column(String(120))  # e.g. "Roads / Drainage"
+    reported_cost: Mapped[str | None] = mapped_column(String(120))
+    reported_length: Mapped[str | None] = mapped_column(String(60))
+    last_verified_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
     status: Mapped[str] = mapped_column(String(20), default="draft")  # draft | published
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -341,6 +348,9 @@ class ProjectSource(Base):
     url: Mapped[str | None] = mapped_column(String(500))
     published_on: Mapped[date | None] = mapped_column(Date)
     notes: Mapped[str | None] = mapped_column(String(500))
+    source_id: Mapped[int | None] = mapped_column(ForeignKey("sources.id", ondelete="SET NULL"), index=True)
+
+    source: Mapped[Source | None] = relationship(lazy="joined")
 
 
 class ProjectImage(Base):
@@ -363,6 +373,97 @@ class ProjectDocument(Base):
     title: Mapped[str] = mapped_column(String(300))
     url: Mapped[str] = mapped_column(String(500))
     file_type: Mapped[str | None] = mapped_column(String(20))
+
+
+# ---------------------------------------------------------------------------
+# Source registry, legislation and elections
+# ---------------------------------------------------------------------------
+
+VERIFICATION_STATUSES = ("verified", "reported", "self_reported", "pending", "disputed")
+
+
+class Source(TimestampMixin, Base):
+    """One row per source document or page, reused by every item that cites it."""
+
+    __tablename__ = "sources"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))  # publisher, e.g. "Vanguard", "INEC"
+    title: Mapped[str | None] = mapped_column(String(300))
+    # inec | national_assembly | fcta | official_site | party | news_agency | news | legal | other
+    source_type: Mapped[str] = mapped_column(String(30), default="news")
+    url: Mapped[str | None] = mapped_column(String(500), unique=True)
+    publication_date: Mapped[date | None] = mapped_column(Date)
+    accessed_date: Mapped[date | None] = mapped_column(Date)
+    # official | party | self | news | other
+    reliability_level: Mapped[str] = mapped_column(String(20), default="news")
+    notes: Mapped[str | None] = mapped_column(String(1000))
+
+
+class ContentSource(Base):
+    """Links a legislative record, election record or news item to sources."""
+
+    __tablename__ = "content_sources"
+    __table_args__ = (
+        UniqueConstraint("content_type", "content_id", "source_id", name="uq_content_source"),
+        Index("ix_content_sources_item", "content_type", "content_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content_type: Mapped[str] = mapped_column(String(20))  # legislation | election | news
+    content_id: Mapped[int] = mapped_column(Integer)
+    source_id: Mapped[int] = mapped_column(ForeignKey("sources.id", ondelete="CASCADE"), index=True)
+    note: Mapped[str | None] = mapped_column(String(300))
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+
+    source: Mapped[Source] = relationship(lazy="joined")
+
+
+class LegislativeRecord(TimestampMixin, SoftDeleteMixin, Base):
+    __tablename__ = "legislative_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(250))
+    bill_number: Mapped[str | None] = mapped_column(String(40))
+    category: Mapped[str] = mapped_column(String(80), index=True)
+    year: Mapped[int | None] = mapped_column(Integer, index=True)
+    sponsor: Mapped[str] = mapped_column(String(160), default="")
+    description: Mapped[str] = mapped_column(Text, default="")
+    # proposed | introduced | second_reading | committee_stage | passed_chamber | assented
+    # | self_reported_passed | pending
+    legislative_stage: Mapped[str] = mapped_column(String(30), default="pending", index=True)
+    official_status: Mapped[str | None] = mapped_column(String(300))  # the source's own wording
+    verification_status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+    verification_note: Mapped[str | None] = mapped_column(String(500))
+    status: Mapped[str] = mapped_column(String(20), default="draft")  # draft | published
+    is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
+    published_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    last_verified_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    created_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+
+
+class ElectionRecord(TimestampMixin, SoftDeleteMixin, Base):
+    __tablename__ = "election_records"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    year: Mapped[int] = mapped_column(Integer, index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    constituency: Mapped[str] = mapped_column(String(160), default="")
+    candidate: Mapped[str] = mapped_column(String(160), default="")
+    party: Mapped[str] = mapped_column(String(40), default="")
+    outcome: Mapped[str] = mapped_column(String(300), default="")
+    votes: Mapped[int | None] = mapped_column(Integer)
+    votes_note: Mapped[str | None] = mapped_column(String(300))
+    election_date: Mapped[date | None] = mapped_column(Date)
+    summary: Mapped[str] = mapped_column(Text, default="")
+    verification_status: Mapped[str] = mapped_column(String(20), default="pending")
+    verification_note: Mapped[str | None] = mapped_column(String(500))
+    is_current: Mapped[bool] = mapped_column(Boolean, default=False)
+    status: Mapped[str] = mapped_column(String(20), default="draft")  # draft | published
+    published_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
+    last_verified_at: Mapped[datetime | None] = mapped_column(UTCDateTime())
 
 
 # ---------------------------------------------------------------------------
@@ -393,6 +494,8 @@ class News(TimestampMixin, SoftDeleteMixin, Base):
     # verified_information | announcement | opinion | historical_record | update
     content_label: Mapped[str] = mapped_column(String(30), default="update")
     source_note: Mapped[str | None] = mapped_column(String(400))
+    # None for items that make no factual claim (e.g. a meeting notice)
+    verification_status: Mapped[str | None] = mapped_column(String(20), index=True)
     image_url: Mapped[str | None] = mapped_column(String(500))
     image_alt: Mapped[str | None] = mapped_column(String(300))
     author_name: Mapped[str] = mapped_column(String(120), default="NIPAM Editorial Team")
@@ -632,7 +735,23 @@ class PrincipalProfile(TimestampMixin, Base):
     biography: Mapped[str] = mapped_column(Text, default="")
     photo_url: Mapped[str | None] = mapped_column(String(500))
     photo_alt: Mapped[str | None] = mapped_column(String(300))
-    timeline: Mapped[list] = mapped_column(JSON, default=list)  # [{year, title, description, source}]
-    gallery: Mapped[list] = mapped_column(JSON, default=list)  # [{url, alt, caption}]
+    # Where the portrait comes from; the image itself is shown only once uploaded.
+    photo_caption: Mapped[str | None] = mapped_column(String(300))
+    photo_source_name: Mapped[str | None] = mapped_column(String(200))
+    photo_source_url: Mapped[str | None] = mapped_column(String(500))
+    photo_usage: Mapped[str | None] = mapped_column(String(200))
+    photo_rights_status: Mapped[str | None] = mapped_column(String(300))
+    # [{year, title, description, source (URL), source_name, verification}]
+    timeline: Mapped[list] = mapped_column(JSON, default=list)
+    # [{url, alt, caption, source_name, source_url, date, usage_rights_status}]
+    gallery: Mapped[list] = mapped_column(JSON, default=list)
     links: Mapped[list] = mapped_column(JSON, default=list)  # [{label, url}]
+    # [{label, verification, source_name, source_url}]
+    badges: Mapped[list | None] = mapped_column(JSON)
+    # [{label, value, verification, source_name, source_url, note}]
+    facts: Mapped[list | None] = mapped_column(JSON)
+    # [{value, label}] plus the label/source shown with them (self-reported figures)
+    metrics: Mapped[list | None] = mapped_column(JSON)
+    metrics_note: Mapped[str | None] = mapped_column(String(300))
+    metrics_source_url: Mapped[str | None] = mapped_column(String(500))
     updated_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))

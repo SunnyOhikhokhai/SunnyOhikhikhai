@@ -18,7 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .config import get_settings
-from .database import Base, SessionLocal, engine
+from .database import SessionLocal
 from .models import (
     AdminUser,
     Announcement,
@@ -101,6 +101,7 @@ PROJECT_CATEGORIES = [
     "Employment/Economic Development",
     "Legislative Activity",
     "Constituency Engagement",
+    "Water & Rural Development",
     "Other",
 ]
 
@@ -111,6 +112,10 @@ NEWS_CATEGORIES = [
     "Events",
     "Announcements",
     "Public Information",
+    "Profile",
+    "Legislation",
+    "Projects",
+    "Elections",
 ]
 
 DISCUSSION_CATEGORIES = [
@@ -270,7 +275,7 @@ def seed_demo(db: Session, admin: User) -> None:
                     "When verified information is supplied, administrators will add the project details, "
                     "dates, photographs, supporting documents and at least one source reference."
                 ),
-                verification_status="unverified",
+                verification_status="pending",
                 verification_note="Sample record — awaiting verified information and sources.",
                 status="published",
                 is_featured=i < 5,
@@ -447,11 +452,16 @@ def seed_demo(db: Session, admin: User) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--demo", action="store_true", help="add clearly-labelled sample content")
-    parser.add_argument("--aduda", action="store_true", help="add sourced records about Sen. Philip Aduda and fill his profile")
-    parser.add_argument("--create-tables", action="store_true", help="create tables without Alembic (dev only)")
+    parser.add_argument(
+        "--content-pack", "--aduda", dest="content_pack", action="store_true",
+        help="import the NIPAM Master Content Pack (profile, projects, legislation, elections, news, sources)",
+    )
+    parser.add_argument("--create-tables", action="store_true", help="create or upgrade tables (runs the migrations)")
     args = parser.parse_args()
     if args.create_tables:
-        Base.metadata.create_all(engine)
+        from .migrate import migrate
+
+        migrate()
     with SessionLocal() as db:
         seed_reference(db)
         admin = seed_admin(db)
@@ -460,11 +470,11 @@ def main() -> None:
             if get_settings().is_production:
                 raise SystemExit("Refusing to seed demo content in production.")
             seed_demo(db, admin)
-        if args.aduda:
-            from .aduda_content import apply
+        if args.content_pack:
+            from .content_pack import apply
 
             result = apply(db)
-            print(f"Sen. Aduda content: {result['records_added']} records added; profile updated: {result['profile_updated']}")
+            print("Content pack: " + ", ".join(f"{k.replace('_', ' ')} {v}" for k, v in result.items()))
     print("Seed complete.")
 
 

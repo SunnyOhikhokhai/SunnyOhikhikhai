@@ -4,7 +4,7 @@ import { CoverArt } from "@/components/brand/Artwork";
 import { Badge } from "@/components/ui/badge";
 import type { Council, DiscussionItem, EventItem, NewsCard as NewsCardT, RecordCard as RecordCardT } from "@/lib/types";
 import { cn, formatDate, formatTime, timeAgo } from "@/lib/utils";
-import { ContentLabelBadge, DemoBadge, VerificationBadge } from "./badges";
+import { ContentLabelBadge, DemoBadge, ProjectStatusBadge, VerificationBadge } from "./badges";
 
 const cardBase =
   "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift focus-within:ring-2 focus-within:ring-green-500";
@@ -26,8 +26,9 @@ export function RecordCard({ record, view = "grid" }: { record: RecordCardT; vie
         <div className="aspect-[16/9] shrink-0 overflow-hidden sm:aspect-auto sm:w-56">{media}</div>
         <div className="flex flex-1 flex-col gap-2 p-5">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{record.category.name}</Badge>
+            <Badge variant="outline">{record.category_label ?? record.category.name}</Badge>
             <VerificationBadge status={record.verification_status} />
+            <ProjectStatusBadge status={record.project_status} />
             {record.is_demo && <DemoBadge />}
           </div>
           <h3 className="text-lg font-bold leading-snug">
@@ -42,10 +43,12 @@ export function RecordCard({ record, view = "grid" }: { record: RecordCardT; vie
                 <MapPin className="size-3.5" /> {record.location ?? record.area_council.name}
               </span>
             )}
-            <span className="flex items-center gap-1">
-              <CalendarDays className="size-3.5" /> {when ?? "Date to be added"}
-            </span>
-            <span>{record.source_count ? `${record.source_count} source${record.source_count > 1 ? "s" : ""}` : "No sources yet"}</span>
+            {when && (
+              <span className="flex items-center gap-1">
+                <CalendarDays className="size-3.5" /> {when}
+              </span>
+            )}
+            <span>Source: {record.primary_source ?? "Information pending verification."}</span>
           </div>
         </div>
       </article>
@@ -60,7 +63,7 @@ export function RecordCard({ record, view = "grid" }: { record: RecordCardT; vie
       </div>
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-green-600">{record.category.name}</span>
+          <span className="text-xs font-semibold uppercase tracking-wider text-green-600">{record.category_label ?? record.category.name}</span>
           <VerificationBadge status={record.verification_status} className="ml-auto" />
         </div>
         <h3 className="text-lg font-bold leading-snug">
@@ -69,13 +72,19 @@ export function RecordCard({ record, view = "grid" }: { record: RecordCardT; vie
           </Link>
         </h3>
         <p className="line-clamp-2 text-sm text-muted-foreground">{record.summary}</p>
+        <div>
+          <ProjectStatusBadge status={record.project_status} />
+        </div>
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border pt-3 text-[13px] text-slate-500">
           <span className="flex items-center gap-1">
-            <MapPin className="size-3.5" /> {record.area_council?.short_name ?? "FCT"}
+            <MapPin className="size-3.5" /> {record.area_council?.short_name ?? "FCT-wide"}
           </span>
-          <span className="flex items-center gap-1">
-            <CalendarDays className="size-3.5" /> {when ?? "Date TBA"}
-          </span>
+          {when && (
+            <span className="flex items-center gap-1">
+              <CalendarDays className="size-3.5" /> {when}
+            </span>
+          )}
+          {record.primary_source && <span className="truncate">Source: {record.primary_source}</span>}
         </div>
       </div>
     </article>
@@ -95,6 +104,7 @@ export function NewsCard({ item, compact }: { item: NewsCardT; compact?: boolean
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         <div className="flex flex-wrap items-center gap-2">
           <ContentLabelBadge label={item.content_label} />
+          {item.verification_status && <VerificationBadge status={item.verification_status} />}
           {item.area_council && <Badge variant="outline">{item.area_council.short_name}</Badge>}
           {item.is_demo && <DemoBadge />}
         </div>

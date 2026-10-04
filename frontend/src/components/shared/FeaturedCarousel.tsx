@@ -5,7 +5,7 @@ import { CoverArt } from "@/components/brand/Artwork";
 import { Button } from "@/components/ui/button";
 import type { RecordCard } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
-import { DemoBadge, VerificationBadge } from "./badges";
+import { DemoBadge, ProjectStatusBadge, VerificationBadge } from "./badges";
 
 const INTERVAL = 6500;
 
@@ -87,10 +87,16 @@ export function FeaturedCarousel({ items }: { items: RecordCard[] }) {
                       <MapPin className="size-4 text-green-600" />
                       <dd>{r.location ?? r.area_council?.name ?? "FCT"}</dd>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <dt className="sr-only">Date</dt>
-                      <CalendarDays className="size-4 text-green-600" />
-                      <dd>{r.year ?? (r.record_date ? formatDate(r.record_date) : "Date to be added")}</dd>
+                    {(r.year || r.record_date) && (
+                      <div className="flex items-center gap-1.5">
+                        <dt className="sr-only">Date</dt>
+                        <CalendarDays className="size-4 text-green-600" />
+                        <dd>{r.year ?? formatDate(r.record_date)}</dd>
+                      </div>
+                    )}
+                    <div>
+                      <dt className="sr-only">Project status</dt>
+                      <dd><ProjectStatusBadge status={r.project_status} /></dd>
                     </div>
                   </dl>
                   <p className="line-clamp-3 text-[15px] leading-relaxed text-muted-foreground">{r.summary}</p>

@@ -3,9 +3,11 @@ import {
   CalendarDays,
   ExternalLink,
   FileText,
+  Gavel,
   History,
   Inbox,
   LayoutDashboard,
+  Library,
   LogOut,
   MapPin,
   Megaphone,
@@ -15,6 +17,7 @@ import {
   Star,
   UserCog,
   Users,
+  Vote,
 } from "lucide-react";
 import { lazy, Suspense, useState } from "react";
 import { Link, NavLink, Navigate, Route, Routes, useNavigate } from "react-router-dom";
@@ -29,6 +32,9 @@ const Overview = lazy(() => import("./Overview"));
 const Analytics = lazy(() => import("./Analytics"));
 const Members = lazy(() => import("./Members"));
 const Records = lazy(() => import("./Records"));
+const LegislationAdmin = lazy(() => import("./LegislationAdmin"));
+const ElectionsAdmin = lazy(() => import("./ElectionsAdmin"));
+const SourcesAdmin = lazy(() => import("./SourcesAdmin"));
 const ProfileAdmin = lazy(() => import("./ProfileAdmin"));
 const NewsAdmin = lazy(() => import("./NewsAdmin"));
 const EventsAdmin = lazy(() => import("./EventsAdmin"));
@@ -39,12 +45,15 @@ const Admins = lazy(() => import("./Admins"));
 const Audit = lazy(() => import("./Audit"));
 const Messages = lazy(() => import("./Messages"));
 
-const NAV = [
+const NAV: { to: string; label: string; icon: typeof Users; perms: string[]; group?: string; end?: boolean; fctWide?: boolean }[] = [
   { to: "/admin", label: "Overview", icon: LayoutDashboard, perms: ["analytics.view", "members.view"], end: true },
   { to: "/admin/analytics", label: "Analytics", icon: BarChart3, perms: ["analytics.view"] },
   { to: "/admin/members", label: "Members", icon: Users, perms: ["members.view", "members.suspend"] },
-  { to: "/admin/profile", label: "Sen. Aduda profile", icon: Star, perms: ["records.manage"], group: "Content" },
-  { to: "/admin/records", label: "Our Record", icon: FileText, perms: ["records.manage"], group: "Content" },
+  { to: "/admin/profile", label: "Senator profile", icon: Star, perms: ["records.manage"], group: "Content" },
+  { to: "/admin/records", label: "Projects", icon: FileText, perms: ["records.manage"], group: "Content" },
+  { to: "/admin/legislation", label: "Legislation", icon: Gavel, perms: ["records.manage"], group: "Content", fctWide: true },
+  { to: "/admin/elections", label: "Elections", icon: Vote, perms: ["records.manage"], group: "Content", fctWide: true },
+  { to: "/admin/sources", label: "Source registry", icon: Library, perms: ["records.manage"], group: "Content" },
   { to: "/admin/news", label: "News", icon: Newspaper, perms: ["news.manage"], group: "Content" },
   { to: "/admin/events", label: "Events", icon: CalendarDays, perms: ["events.manage"], group: "Content" },
   { to: "/admin/announcements", label: "Announcements", icon: Megaphone, perms: ["announcements.manage"], group: "Content" },
@@ -58,7 +67,8 @@ const NAV = [
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, can, logout } = useAuth();
   const navigate = useNavigate();
-  const items = NAV.filter((n) => n.perms.some(can));
+  // Council-scoped administrators don't manage FCT-wide records.
+  const items = NAV.filter((n) => n.perms.some(can) && !(n.fctWide && user?.admin?.area_council));
   let lastGroup: string | undefined;
   return (
     <div className="flex h-full flex-col bg-navy-900 text-navy-100">
@@ -140,6 +150,9 @@ export default function AdminApp() {
             <Route path="members" element={<Members />} />
             <Route path="profile" element={<ProfileAdmin />} />
             <Route path="records/*" element={<Records />} />
+            <Route path="legislation/*" element={<LegislationAdmin />} />
+            <Route path="elections/*" element={<ElectionsAdmin />} />
+            <Route path="sources" element={<SourcesAdmin />} />
             <Route path="news/*" element={<NewsAdmin />} />
             <Route path="events/*" element={<EventsAdmin />} />
             <Route path="announcements" element={<Announcements />} />

@@ -5,6 +5,7 @@
 > 2. Download the project ZIP, extract it to your Desktop, and rename the folder to `NIPAM`.
 > 3. Double-click **`START-NIPAM.bat`** in that folder. It sets everything up and opens the site at http://localhost:5173.
 > 4. To edit in VS Code: **File → Open Folder → Desktop → NIPAM**.
+> 5. **Updates:** if the folder is linked to GitHub (a `.git` folder exists), `START-NIPAM.bat` downloads the latest version each time it starts. To link a folder that came from a ZIP, run these once in the folder: `git init`, `git remote add origin https://github.com/SunnyOhikhokhai/SunnyOhikhikhai.git`, `git fetch origin`, `git reset --hard origin/main`, `git branch -M main`, `git branch -u origin/main`. Your database and installed packages are kept.
 
 The digital home of NIPAM, the support movement for **Sen. Philip Aduda**. It is a mobile-first platform that unites supporters across the six Area Councils of the Federal Capital Territory (FCT), Nigeria, shares his record, and spreads his message.
 
@@ -15,11 +16,11 @@ The digital home of NIPAM, the support movement for **Sen. Philip Aduda**. It is
 
 ## What's included
 
-**Public site** — landing page (hero, rotating featured records, a "Meet Sen. Philip Aduda" section, About pillars, six Area Council cards, record highlights, news, events, community, join CTA), a **Sen. Philip Aduda profile page** (`/philip-aduda`: biography, public-service timeline with sources, gallery, official channels — edited from the admin dashboard), About, **Our Record** (grid/list views, filters by Area Council, category, year, verification status, search, sort), record detail (sources, documents, images, verification panel, related records, share), Area Councils with a schematic interactive map and a tabbed page per council (Overview, Community Updates, Events, Public Information, Projects/Records, Discussions, Announcements), News with categories, Events (upcoming, past, calendar, registration, add-to-calendar), moderated Community (discussions, replies, likes, reporting), global search (Ctrl/⌘ K), Contact, Privacy Policy, Terms of Use, Community Guidelines, and a 404 page.
+**Public site** — landing page (hero, rotating featured records, six featured sections, the Senator profile with self-reported figures, About pillars, six Area Council cards, record highlights, news, events, community, join CTA), a **Senator profile page** (`/philip-aduda`: status badges, sourced facts, 2027 election card, self-reported figures, biography, political timeline with a source and verification label on every item, gallery, official links), About, **Our Record** with three parts — **constituency projects** (filters by Area Council, category, project status and verification), **legislation** (`/legislation`, one record per bill, filters by category, year, legislative stage and verification) and **elections** (`/elections`, 2019, 2023 and the INEC-verified 2027 candidacy) — with detail pages that show Source, Verification and Last updated, Area Councils with a schematic interactive map and a tabbed page per council (Overview, Community Updates, Events, Public Information, Projects/Records, Discussions, Announcements), News with category, date and Area Council filters, a verification label and linked sources, Events (upcoming, past, calendar, registration, add-to-calendar), moderated Community (discussions, replies, likes, reporting), global search (Ctrl/⌘ K), Contact, Privacy Policy, Terms of Use, Community Guidelines, and a 404 page.
 
 **Members** — 4-step registration (personal info → Area Council → email/phone OTP verification → consent), password or one-time-code login, remember me, forgot/reset password, a dashboard, a notification centre, and settings (profile, verification, notification preferences per channel, change password, delete account).
 
-**Admin (`/admin`)** — overview stats and charts, analytics, member management (search, filter, detail, suspend/reactivate, record opt-outs, CSV export of permitted data), CMS for records (with sources, images and PDFs), news, events (publish, cancel, archive), announcements (schedule, publish, expire) and Area Council profiles, a moderation queue, the **language filter word list**, the Sen. Aduda profile editor, role assignment, the audit log, and a contact inbox.
+**Admin (`/admin`)** — overview stats and charts, analytics, member management (search, filter, detail, suspend/reactivate, record opt-outs, CSV export of permitted data), CMS for projects (with sources, images, PDFs, project status, reported cost and length), legislation, elections, a **source registry** (each URL stored once and reused), news (with verification and sources), events (publish, cancel, archive), announcements (schedule, publish, expire) and Area Council profiles, a moderation queue, the **language filter word list**, the Senator profile editor (badges, facts, figures, portrait record, timeline), role assignment, the audit log, and a contact inbox.
 
 ### Roles
 
@@ -33,7 +34,9 @@ The digital home of NIPAM, the support movement for **Sen. Philip Aduda**. It is
 
 ### Content principles, built into the product
 
-- Every record has a verification status: **Unverified / Pending review / Verified / Disputed**. The server refuses to mark a record *Verified* unless at least one source is attached.
+- Every record has a verification status: **Verified** (official INEC, National Assembly or FCTA record), **Reported** (credible news), **Self-reported** (published by Senator Aduda or his party), **Pending verification** or **Disputed**. The server refuses to mark anything *Verified* without a source.
+- Project status and legislative stage keep the source's own wording: "ongoing" is never upgraded to "completed", and a bill is never shown as law without an official enactment record.
+- Content comes from the NIPAM Master Content Pack; see [`docs/content-pack.md`](docs/content-pack.md).
 - News carries a content label: *Verified information*, *Announcement*, *Opinion*, *Historical record* or *Update*. *Verified information* requires a source note.
 - Community posts are labelled as user-generated content.
 - Demo content is flagged `is_demo` and shows a **Sample** badge. It contains placeholders such as **[VERIFIED PROJECT INFORMATION TO BE ADDED]**. No projects, figures, dates or achievements have been invented.
@@ -59,7 +62,7 @@ Argon2id password hashing; server-side sessions in HTTP-only `SameSite=Lax` cook
 # API
 cd backend
 python3 -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
-.venv/bin/python -m app.seed --create-tables --demo   # SQLite by default
+.venv/bin/python -m app.seed --create-tables --demo --content-pack   # SQLite by default; runs the migrations
 .venv/bin/uvicorn app.main:app --reload --port 8000     # API docs: http://localhost:8000/api/docs
 
 # Web (in another terminal)
@@ -80,10 +83,10 @@ To use PostgreSQL locally, set `NIPAM_DATABASE_URL=postgresql+psycopg://user:pas
 ## Tests
 
 ```bash
-cd backend && .venv/bin/pytest -q                          # 47 API tests (SQLite)
+cd backend && .venv/bin/pytest -q                          # 54 API tests (SQLite)
 NIPAM_TEST_DATABASE_URL=postgresql+psycopg://… .venv/bin/pytest -q   # same tests against PostgreSQL
 cd frontend && npm run typecheck && npm run build
-BASE=http://localhost:5173 npm run e2e                     # 28-step browser test of member + admin flows
+BASE=http://localhost:5173 npm run e2e                     # 31-step browser test of member + admin flows
 ```
 
 The end-to-end script covers registration → verification → consent → dashboard → logout/login → Area Council → records → news → event registration → calendar → community post/comment/like → notifications → settings → search → reporting, then admin login → members → record CMS with sources → news → events → moderation → analytics → audit log. It saves screenshots to `frontend/e2e-screens/`.
@@ -109,8 +112,8 @@ CI (`.github/workflows/ci.yml`) runs lint, the API tests on SQLite and PostgreSQ
 ## Before launch — to be supplied by NIPAM
 
 - **Official logo:** the current mark in `frontend/src/components/brand/Logo.tsx` and `frontend/public/brand/*.svg` is a placeholder based on the brief. Replace it, then run `npm run icons` to regenerate the favicon, PWA icons, splash screens and Open Graph image.
-- **Sen. Philip Aduda content:** run `python -m app.seed --aduda` to load sourced project records and fill his profile (see `docs/aduda-research.md`), then add his official photo, title, biography, timeline (with sources) and official channels under **Admin → Sen. Aduda profile**. It currently shows clearly marked placeholders.
-- **Verified content:** replace the sample records, events and news, or run the seed without `--demo`.
+- **Official portrait:** upload it under **Admin → Senator profile** once obtained with permission from his official website (see [`docs/content-pack.md`](docs/content-pack.md) for the other open items).
+- **Sample events and discussions:** the content pack replaces the sample records and news; sample events and discussions remain until real ones are added (or run the seed without `--demo`).
 - **Social media links** in `SiteFooter.tsx`, and contact details.
 - **Legal review:** have the Privacy Policy, Terms and Guidelines (`frontend/src/pages/Legal.tsx`) reviewed against the Nigeria Data Protection Act 2023.
 - **Map:** the Area Council map is schematic and labelled as such. If official GIS boundaries are adopted, replace `REGIONS` in `FctMap.tsx` and cite the source.

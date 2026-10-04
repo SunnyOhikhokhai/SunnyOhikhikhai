@@ -8,6 +8,9 @@ const About = lazy(() => import("./pages/About"));
 const Aduda = lazy(() => import("./pages/Aduda"));
 const OurRecord = lazy(() => import("./pages/OurRecord"));
 const RecordDetail = lazy(() => import("./pages/RecordDetail"));
+const Legislation = lazy(() => import("./pages/Legislation"));
+const LegislationDetail = lazy(() => import("./pages/LegislationDetail"));
+const Elections = lazy(() => import("./pages/Elections"));
 const AreaCouncils = lazy(() => import("./pages/AreaCouncils"));
 const AreaCouncilDetail = lazy(() => import("./pages/AreaCouncilDetail"));
 const News = lazy(() => import("./pages/News"));
@@ -49,6 +52,9 @@ export default function App() {
           <Route path="philip-aduda" element={<Aduda />} />
           <Route path="our-record" element={<OurRecord />} />
           <Route path="our-record/:slug" element={<RecordDetail />} />
+          <Route path="legislation" element={<Legislation />} />
+          <Route path="legislation/:slug" element={<LegislationDetail />} />
+          <Route path="elections" element={<Elections />} />
           <Route path="area-councils" element={<AreaCouncils />} />
           <Route path="area-councils/:slug" element={<AreaCouncilDetail />} />
           <Route path="news" element={<News />} />

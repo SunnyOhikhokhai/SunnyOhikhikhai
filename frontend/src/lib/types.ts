@@ -21,7 +21,77 @@ export interface Category {
   description?: string;
 }
 
-export type VerificationStatus = "unverified" | "pending_review" | "verified" | "disputed";
+export type VerificationStatus = "verified" | "reported" | "self_reported" | "pending" | "disputed";
+
+export type ProjectStatus = "ongoing" | "nearing_completion" | "commissioned" | "completed" | "reported" | "pending";
+
+export type LegislativeStage =
+  | "proposed"
+  | "introduced"
+  | "second_reading"
+  | "committee_stage"
+  | "passed_chamber"
+  | "assented"
+  | "self_reported_passed"
+  | "pending";
+
+export interface RegistrySource {
+  id: number;
+  name: string;
+  title: string | null;
+  source_type: string;
+  url: string | null;
+  publication_date: string | null;
+  accessed_date: string | null;
+  reliability_level: string;
+  notes: string | null;
+  note?: string | null;
+  usage_count?: number;
+}
+
+export interface LegislationRecord {
+  id: number;
+  slug: string;
+  title: string;
+  bill_number: string | null;
+  category: string;
+  year: number | null;
+  sponsor: string;
+  description: string;
+  legislative_stage: LegislativeStage;
+  official_status: string | null;
+  verification_status: VerificationStatus;
+  verification_note: string | null;
+  is_featured: boolean;
+  sources: RegistrySource[];
+  published_at: string | null;
+  updated_at: string;
+  last_verified_at: string | null;
+  related?: LegislationRecord[];
+  status?: string;
+}
+
+export interface ElectionRecord {
+  id: number;
+  slug: string;
+  year: number;
+  title: string;
+  constituency: string;
+  candidate: string;
+  party: string;
+  outcome: string;
+  votes: number | null;
+  votes_note: string | null;
+  election_date: string | null;
+  summary: string;
+  verification_status: VerificationStatus;
+  verification_note: string | null;
+  is_current: boolean;
+  sources: RegistrySource[];
+  updated_at: string;
+  last_verified_at: string | null;
+  status?: string;
+}
 
 export interface RecordCard {
   id: number;
@@ -34,11 +104,19 @@ export interface RecordCard {
   record_date: string | null;
   summary: string;
   verification_status: VerificationStatus;
+  project_status: ProjectStatus;
+  status_note: string | null;
+  category_label: string | null;
+  reported_cost: string | null;
+  reported_length: string | null;
   is_featured: boolean;
   is_demo: boolean;
   image: { url: string; alt: string } | null;
   source_count: number;
+  primary_source: string | null;
   published_at: string | null;
+  updated_at: string;
+  last_verified_at: string | null;
 }
 
 export interface Source {
@@ -47,6 +125,8 @@ export interface Source {
   url: string | null;
   published_on: string | null;
   notes: string | null;
+  source_type?: string | null;
+  reliability_level?: string | null;
 }
 
 export interface RecordDetail extends RecordCard {
@@ -56,7 +136,6 @@ export interface RecordDetail extends RecordCard {
   documents: { title: string; url: string; file_type: string | null }[];
   sources: Source[];
   view_count: number;
-  updated_at: string;
   related?: RecordCard[];
   status?: string;
 }
@@ -71,6 +150,7 @@ export interface NewsCard {
   category: Category;
   area_council: CouncilRef | null;
   content_label: ContentLabel;
+  verification_status: VerificationStatus | null;
   image_url: string | null;
   image_alt: string | null;
   author_name: string;
@@ -82,6 +162,7 @@ export interface NewsCard {
 export interface NewsDetail extends NewsCard {
   body: string;
   source_note: string | null;
+  sources: RegistrySource[];
   updated_at: string;
   related?: NewsCard[];
   status?: string;
@@ -203,6 +284,9 @@ export interface Meta {
   news_categories: Category[];
   discussion_categories: Category[];
   record_years: number[];
+  legislation_categories: string[];
+  legislation_years: number[];
+  news_months: string[];
 }
 
 export interface PrincipalProfile {
@@ -213,8 +297,28 @@ export interface PrincipalProfile {
   biography: string;
   photo_url: string | null;
   photo_alt: string | null;
-  timeline: { year: string; title: string; description: string; source: string }[];
-  gallery: { url: string; alt: string; caption: string }[];
+  photo_caption: string | null;
+  photo_source_name: string | null;
+  photo_source_url: string | null;
+  photo_usage: string | null;
+  photo_rights_status: string | null;
+  badges: SourcedItem<{ label: string }>[];
+  facts: SourcedItem<{ label: string; value: string; note?: string }>[];
+  metrics: { value: string; label: string }[];
+  metrics_note: string | null;
+  metrics_source_url: string | null;
+  timeline: { year: string; title: string; description: string; source: string; source_name?: string; verification?: VerificationStatus }[];
+  gallery: {
+    url: string;
+    alt: string;
+    caption: string;
+    source_name?: string;
+    source_url?: string;
+    date?: string;
+    usage_rights_status?: string;
+  }[];
   links: { label: string; url: string }[];
   updated_at: string;
 }
+
+export type SourcedItem<T> = T & { verification: VerificationStatus; source_name: string; source_url: string };

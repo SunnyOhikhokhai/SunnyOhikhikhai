@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CalendarDays, ExternalLink, FileDown, FileText, Info, MapPin, Tag } from "lucide-react";
+import { AlertTriangle, Banknote, CalendarDays, ExternalLink, FileDown, FileText, Info, MapPin, Ruler, Tag } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CoverArt } from "@/components/brand/Artwork";
-import { DemoBadge, VerificationBadge } from "@/components/shared/badges";
+import { DemoBadge, ProjectStatusBadge, VerificationBadge } from "@/components/shared/badges";
+import { SourceLine } from "@/components/shared/SourceLine";
 import { RecordCard } from "@/components/shared/cards";
 import { Markdown } from "@/components/shared/Markdown";
 import { Seo } from "@/components/shared/Seo";
@@ -11,7 +12,7 @@ import { ShareButton } from "@/components/shared/Share";
 import { ErrorState } from "@/components/shared/states";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError, getData } from "@/lib/api";
-import { VERIFICATION } from "@/lib/constants";
+import { PENDING_INFO, VERIFICATION } from "@/lib/constants";
 import type { RecordDetail as RecordDetailT } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
 import NotFound from "./NotFound";
@@ -34,7 +35,7 @@ export default function RecordDetail() {
       </div>
     );
 
-  const v = VERIFICATION[r.verification_status];
+  const v = VERIFICATION[r.verification_status] ?? VERIFICATION.pending;
   const when = r.record_date ? formatDate(r.record_date) : r.year ? String(r.year) : null;
   const current = r.images[img];
 
@@ -52,20 +53,24 @@ export default function RecordDetail() {
           <nav aria-label="Breadcrumb" className="mb-5 text-sm text-slate-500">
             <Link to="/our-record" className="font-semibold text-green-600 hover:underline">Our Record</Link>
             <span className="mx-2">/</span>
-            <span>{r.category.name}</span>
+            <span>{r.category_label ?? r.category.name}</span>
           </nav>
           <div className="mb-4 flex flex-wrap gap-2">
             <VerificationBadge status={r.verification_status} />
+            <ProjectStatusBadge status={r.project_status} />
             {r.is_demo && <DemoBadge />}
           </div>
           <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">{r.title}</h1>
           <p className="mt-4 max-w-3xl text-lg text-muted-foreground">{r.summary}</p>
           <dl className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              [MapPin, "Location", r.location ?? "To be added"],
+              [MapPin, "Location", r.location ?? PENDING_INFO],
               [Tag, "Area Council", r.area_council?.name ?? "FCT-wide"],
-              [CalendarDays, "Date / year", when ?? "To be added"],
-              [FileText, "Category", r.category.name],
+              [FileText, "Category", r.category_label ?? r.category.name],
+              [Info, "Status (source wording)", r.status_note ?? PENDING_INFO],
+              ...(r.reported_cost ? [[Banknote, "Reported value", r.reported_cost]] : []),
+              ...(r.reported_length ? [[Ruler, "Reported length", r.reported_length]] : []),
+              ...(when ? [[CalendarDays, "Year", when]] : []),
             ].map(([Icon, label, value]) => {
               const I = Icon as typeof MapPin;
               return (
@@ -78,8 +83,13 @@ export default function RecordDetail() {
               );
             })}
           </dl>
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-slate-500">Recorded on {formatDate(r.published_at)} · Last updated {formatDate(r.updated_at)}</p>
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-4 rounded-xl bg-white p-4 ring-1 ring-border">
+            <SourceLine
+              source={r.sources[0] ? r.sources[0].publisher ?? r.sources[0].title : null}
+              sourceUrl={r.sources[0]?.url}
+              verification={r.verification_status}
+              updated={r.updated_at}
+            />
             <ShareButton title={r.title} text={r.summary} />
           </div>
         </div>
@@ -142,6 +152,7 @@ export default function RecordDetail() {
             </p>
             <p className="mt-1.5 text-sm text-slate-600">{v.description}</p>
             {r.verification_note && <p className="mt-2 text-sm italic text-slate-600">“{r.verification_note}”</p>}
+            {r.last_verified_at && <p className="mt-2 text-xs text-slate-500">Last verified {formatDate(r.last_verified_at)}</p>}
           </div>
 
           <div className="rounded-2xl border border-border p-5">
@@ -169,7 +180,7 @@ export default function RecordDetail() {
               </ol>
             ) : (
               <p className="mt-2 text-sm text-slate-500">
-                No sources have been added yet. <span className="font-semibold text-amber-700">[SOURCE TO BE ADDED]</span> This record should be treated as unconfirmed.
+                No sources have been added yet. {PENDING_INFO} This record should be treated as unconfirmed.
               </p>
             )}
           </div>

@@ -16,8 +16,10 @@ from ..models import (
     Announcement,
     AreaCouncil,
     Discussion,
+    ElectionRecord,
     Event,
     EventRegistration,
+    LegislativeRecord,
     MemberAreaCouncil,
     News,
     NewsCategory,
@@ -51,6 +53,14 @@ def published_news():
     return select(News).where(
         News.status == "published", News.deleted_at.is_(None), News.published_at <= utcnow()
     )
+
+
+def published_legislation():
+    return select(LegislativeRecord).where(LegislativeRecord.status == "published", LegislativeRecord.deleted_at.is_(None))
+
+
+def published_elections():
+    return select(ElectionRecord).where(ElectionRecord.status == "published", ElectionRecord.deleted_at.is_(None))
 
 
 def visible_events():
@@ -115,6 +125,17 @@ def meta(db: Session = Depends(get_db)):
                 {y for y in db.scalars(published_projects().with_only_columns(Project.year).distinct()).all() if y},
                 reverse=True,
             ),
+            "legislation_categories": sorted(
+                set(db.scalars(published_legislation().with_only_columns(LegislativeRecord.category).distinct()).all())
+            ),
+            "legislation_years": sorted(
+                {y for y in db.scalars(published_legislation().with_only_columns(LegislativeRecord.year).distinct()).all() if y},
+                reverse=True,
+            ),
+            "news_months": sorted(
+                {d.strftime("%Y-%m") for d in db.scalars(published_news().with_only_columns(News.published_at)).all() if d},
+                reverse=True,
+            ),
         }
     )
 
@@ -148,9 +169,15 @@ def home(db: Session = Depends(get_db)):
     from .admin import get_profile
 
     profile = ser.principal(get_profile(db))
+    current = db.scalars(published_elections().where(ElectionRecord.is_current.is_(True)).order_by(ElectionRecord.year.desc())).first()
     return ok(
         {
-            "profile": {k: profile[k] for k in ("name", "title", "tagline", "summary", "photo_url", "photo_alt")},
+            "profile": {
+                k: profile[k]
+                for k in ("name", "title", "tagline", "summary", "photo_url", "photo_alt", "badges", "metrics", "metrics_note", "metrics_source_url")
+            },
+            "election": ser.election(current, ser.linked_sources(db, "election", [current.id])[current.id]) if current else None,
+            "legislation_count": db.scalar(select(func.count()).select_from(published_legislation().subquery())) or 0,
             "featured": [ser.project_card(p) for p in featured],
             "councils": [
                 ser.council(c, member_count=counts.get(c.id, 0), latest_update=latest_by_council[c.id]) for c in councils
@@ -250,6 +277,7 @@ def list_projects(
     category: str | None = None,
     year: int | None = None,
     verification: str | None = None,
+    project_status: str | None = None,
     featured: bool | None = None,
     sort: str = Query("recent", pattern="^(recent|oldest|year_desc|year_asc|title|popular)$"),
     page: int = 1,
@@ -259,7 +287,16 @@ def list_projects(
     stmt = published_projects()
     if q:
         t = like_term(q)
-        stmt = stmt.where(or_(Project.title.ilike(t), Project.summary.ilike(t), Project.location.ilike(t)))
+        stmt = stmt.where(
+            or_(
+                Project.title.ilike(t),
+                Project.summary.ilike(t),
+                Project.location.ilike(t),
+                Project.category_label.ilike(t),
+            )
+        )
+    if project_status:
+        stmt = stmt.where(Project.project_status == project_status)
     if area_council:
         stmt = stmt.where(Project.area_council_id == _council_by_slug(db, area_council).id)
     if category:
@@ -303,6 +340,8 @@ def list_news(
     q: str | None = Query(None, max_length=100),
     category: str | None = None,
     area_council: str | None = None,
+    month: str | None = Query(None, pattern=r"^\d{4}-(0[1-9]|1[0-2])$"),
+    verification: str | None = None,
     page: int = 1,
     page_size: int = 9,
     db: Session = Depends(get_db),
@@ -311,6 +350,11 @@ def list_news(
     if q:
         t = like_term(q)
         stmt = stmt.where(or_(News.title.ilike(t), News.excerpt.ilike(t)))
+    if month:
+        y, m = (int(x) for x in month.split("-"))
+        stmt = stmt.where(extract("year", News.published_at) == y, extract("month", News.published_at) == m)
+    if verification:
+        stmt = stmt.where(News.verification_status == verification)
     if category:
         stmt = stmt.join(NewsCategory).where(NewsCategory.slug == category)
     if area_council:
@@ -327,7 +371,82 @@ def news_detail(slug: str, db: Session = Depends(get_db)):
     related = db.scalars(
         published_news().where(News.id != n.id, News.category_id == n.category_id).order_by(News.published_at.desc()).limit(3)
     ).unique().all()
-    return ok({**ser.news_detail(n), "related": [ser.news_card(r) for r in related]})
+    sources = ser.linked_sources(db, "news", [n.id])[n.id]
+    return ok({**ser.news_detail(n, sources), "related": [ser.news_card(r) for r in related]})
+
+
+# --- Legislation and elections ---------------------------------------------------
+
+
+def _with_sources(db: Session, content_type: str, items: list, fn) -> list[dict]:
+    src = ser.linked_sources(db, content_type, [i.id for i in items])
+    return [fn(i, src[i.id]) for i in items]
+
+
+@router.get("/legislation")
+def list_legislation(
+    q: str | None = Query(None, max_length=100),
+    category: str | None = Query(None, max_length=80),
+    year: int | None = None,
+    stage: str | None = None,
+    verification: str | None = None,
+    page: int = 1,
+    page_size: int = 20,
+    db: Session = Depends(get_db),
+):
+    stmt = published_legislation()
+    if q:
+        t = like_term(q)
+        stmt = stmt.where(
+            or_(
+                LegislativeRecord.title.ilike(t),
+                LegislativeRecord.description.ilike(t),
+                LegislativeRecord.bill_number.ilike(t),
+                LegislativeRecord.category.ilike(t),
+            )
+        )
+    if category:
+        stmt = stmt.where(LegislativeRecord.category == category)
+    if year:
+        stmt = stmt.where(LegislativeRecord.year == year)
+    if stage:
+        stmt = stmt.where(LegislativeRecord.legislative_stage == stage)
+    if verification:
+        stmt = stmt.where(LegislativeRecord.verification_status == verification)
+    stmt = stmt.order_by(LegislativeRecord.is_featured.desc(), LegislativeRecord.year.desc().nulls_last(), LegislativeRecord.title)
+    page = max(1, page)
+    page_size = min(max(1, page_size), 50)
+    total = db.scalar(select(func.count()).select_from(stmt.order_by(None).subquery())) or 0
+    rows = db.scalars(stmt.offset((page - 1) * page_size).limit(page_size)).all()
+    return ok(
+        _with_sources(db, "legislation", rows, ser.legislation),
+        page=page,
+        page_size=page_size,
+        total=total,
+        total_pages=max(1, -(-total // page_size)),
+    )
+
+
+@router.get("/legislation/{slug}")
+def legislation_detail(slug: str, db: Session = Depends(get_db)):
+    r = db.scalars(published_legislation().where(LegislativeRecord.slug == slug)).first()
+    if not r:
+        raise not_found("Legislative record")
+    related = db.scalars(
+        published_legislation().where(LegislativeRecord.id != r.id, LegislativeRecord.category == r.category).limit(3)
+    ).all()
+    return ok(
+        {
+            **ser.legislation(r, ser.linked_sources(db, "legislation", [r.id])[r.id]),
+            "related": _with_sources(db, "legislation", related, ser.legislation),
+        }
+    )
+
+
+@router.get("/elections")
+def list_elections(db: Session = Depends(get_db)):
+    rows = db.scalars(published_elections().order_by(ElectionRecord.year.desc(), ElectionRecord.id.desc())).all()
+    return ok(_with_sources(db, "election", rows, ser.election))
 
 
 # --- Events --------------------------------------------------------------------

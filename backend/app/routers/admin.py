@@ -25,10 +25,13 @@ from ..models import (
     BlockedTerm,
     Comment,
     ContactMessage,
+    ContentSource,
     ContentViewStat,
     Discussion,
+    ElectionRecord,
     Event,
     EventRegistration,
+    LegislativeRecord,
     MemberAreaCouncil,
     News,
     NewsCategory,
@@ -40,6 +43,7 @@ from ..models import (
     ProjectSource,
     Report,
     Role,
+    Source,
     User,
     Ward,
     utcnow,
@@ -50,12 +54,16 @@ from ..schemas import (
     AnnouncementIn,
     BlockedTermIn,
     CouncilIn,
+    ElectionIn,
     EventIn,
+    LegislationIn,
+    LinkedSourceIn,
     ModerateIn,
     NewsIn,
     ProfileIn,
     ProjectIn,
     ResolveReportIn,
+    SourceRegistryIn,
     SuspendIn,
 )
 from ..services.audit import audit
@@ -414,11 +422,23 @@ def _apply_project(db: Session, p: Project, body: ProjectIn, ctx: AdminContext) 
     p.record_date = body.record_date
     p.summary = body.summary
     p.description = body.description
+    if body.verification_status == "verified" and p.verification_status != "verified" and not body.last_verified_at:
+        p.last_verified_at = utcnow()
+    elif body.last_verified_at:
+        p.last_verified_at = body.last_verified_at
     p.verification_status = body.verification_status
     p.verification_note = body.verification_note
+    for f in ("project_status", "status_note", "category_label", "reported_cost", "reported_length"):
+        setattr(p, f, getattr(body, f))
     p.is_featured = body.is_featured
     p.is_demo = body.is_demo
-    p.sources = [ProjectSource(**s.model_dump()) for s in body.sources]
+    p.sources = [
+        ProjectSource(
+            **s.model_dump(),
+            source_id=registry_source(db, LinkedSourceIn(name=s.publisher or s.title, url=s.url, title=s.title)).id if s.url else None,
+        )
+        for s in body.sources
+    ]
     p.images = [ProjectImage(sort_order=i, **img.model_dump()) for i, img in enumerate(body.images)]
     p.documents = [ProjectDocument(**d.model_dump()) for d in body.documents]
 
@@ -455,7 +475,7 @@ def admin_project(pid: int, ctx: AdminContext = Depends(require("records.manage"
 
 @router.post("/projects", status_code=201)
 def create_project(body: ProjectIn, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
-    p = Project(slug=unique_slug(db, Project, body.title), created_by_id=ctx.user.id, verification_status="unverified")
+    p = Project(slug=unique_slug(db, Project, body.title), created_by_id=ctx.user.id, verification_status="pending")
     _apply_project(db, p, body, ctx)
     db.add(p)
     db.flush()
@@ -467,9 +487,12 @@ def create_project(body: ProjectIn, request: Request, ctx: AdminContext = Depend
 @router.put("/projects/{pid}")
 def update_project(pid: int, body: ProjectIn, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
     p = _project(db, pid, ctx)
-    before = p.verification_status
+    before = (p.verification_status, p.project_status)
     _apply_project(db, p, body, ctx)
-    audit(db, ctx.user.id, "record.updated", "project", p.id, request, verification=[before, p.verification_status])
+    audit(
+        db, ctx.user.id, "record.updated", "project", p.id, request,
+        verification=[before[0], p.verification_status], project_status=[before[1], p.project_status],
+    )
     db.commit()
     return ok(ser.project_admin(p))
 
@@ -504,6 +527,261 @@ def delete_project(pid: int, request: Request, ctx: AdminContext = Depends(requi
 
 
 # ---------------------------------------------------------------------------
+# Source registry
+# ---------------------------------------------------------------------------
+
+
+def registry_source(db: Session, body: LinkedSourceIn) -> Source:
+    """The registry entry for a cited source: matched by URL, or by name when
+    there is no URL. New entries are created as type/reliability "other" for an
+    administrator to classify."""
+    if body.url:
+        s = db.scalar(select(Source).where(Source.url == body.url))
+    else:
+        s = db.scalar(select(Source).where(Source.url.is_(None), Source.name == body.name))
+    if not s:
+        s = Source(name=body.name, title=body.title, url=body.url, source_type="other", reliability_level="other", accessed_date=date.today())
+        db.add(s)
+        db.flush()
+    return s
+
+
+def set_linked_sources(db: Session, content_type: str, content_id: int, sources: list[LinkedSourceIn]) -> None:
+    for link in db.scalars(
+        select(ContentSource).where(ContentSource.content_type == content_type, ContentSource.content_id == content_id)
+    ).all():
+        db.delete(link)
+    db.flush()
+    seen: set[int] = set()
+    for i, body in enumerate(sources):
+        s = registry_source(db, body)
+        if s.id in seen:
+            continue
+        seen.add(s.id)
+        db.add(ContentSource(content_type=content_type, content_id=content_id, source_id=s.id, note=body.note, sort_order=i))
+    db.flush()
+
+
+def _source_usage(db: Session, ids: list[int]) -> dict[int, int]:
+    counts: Counter = Counter()
+    if ids:
+        for sid, n in db.execute(
+            select(ContentSource.source_id, func.count()).where(ContentSource.source_id.in_(ids)).group_by(ContentSource.source_id)
+        ).all():
+            counts[sid] += n
+        for sid, n in db.execute(
+            select(ProjectSource.source_id, func.count())
+            .join(Project, Project.id == ProjectSource.project_id)
+            .where(ProjectSource.source_id.in_(ids), Project.deleted_at.is_(None))
+            .group_by(ProjectSource.source_id)
+        ).all():
+            counts[sid] += n
+    return counts
+
+
+@router.get("/sources")
+def list_sources(
+    q: str | None = Query(None, max_length=100),
+    page: int = 1,
+    page_size: int = 50,
+    ctx: AdminContext = Depends(require("records.manage", "news.manage")),
+    db: Session = Depends(get_db),
+):
+    stmt = select(Source)
+    if q:
+        t = like_term(q)
+        stmt = stmt.where(or_(Source.name.ilike(t), Source.title.ilike(t), Source.url.ilike(t)))
+    page = max(page, 1)
+    page_size = max(1, min(page_size, 200))
+    total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+    rows = db.scalars(stmt.order_by(Source.name, Source.id).offset((page - 1) * page_size).limit(page_size)).all()
+    usage = _source_usage(db, [r.id for r in rows])
+    return ok(
+        [{**ser.source(r), "usage_count": usage.get(r.id, 0)} for r in rows],
+        page=page, page_size=page_size, total=total, total_pages=max(1, -(-total // page_size)),
+    )
+
+
+def _check_source_url(db: Session, url: str | None, exclude_id: int | None = None) -> None:
+    if url and db.scalar(select(Source.id).where(Source.url == url, Source.id != (exclude_id or 0))):
+        raise ApiError(409, "duplicate_source", "A source with this URL is already in the registry.")
+
+
+@router.post("/sources", status_code=201)
+def create_source(body: SourceRegistryIn, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+    _check_source_url(db, body.url)
+    s = Source(**body.model_dump())
+    db.add(s)
+    db.flush()
+    audit(db, ctx.user.id, "source.created", "source", s.id, request)
+    db.commit()
+    return ok(ser.source(s))
+
+
+@router.put("/sources/{sid}")
+def update_source(sid: int, body: SourceRegistryIn, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+    s = db.get(Source, sid)
+    if not s:
+        raise not_found("Source")
+    _check_source_url(db, body.url, sid)
+    for k, v in body.model_dump().items():
+        setattr(s, k, v)
+    # Keep the copies on project source rows in step with the registry.
+    for ps in db.scalars(select(ProjectSource).where(ProjectSource.source_id == sid)).all():
+        ps.url, ps.publisher = s.url, s.name
+    audit(db, ctx.user.id, "source.updated", "source", s.id, request)
+    db.commit()
+    return ok(ser.source(s))
+
+
+@router.delete("/sources/{sid}")
+def delete_source(sid: int, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+    s = db.get(Source, sid)
+    if not s:
+        raise not_found("Source")
+    if _source_usage(db, [sid]).get(sid):
+        raise ApiError(409, "source_in_use", "This source is cited by published content. Remove it from those items first.")
+    db.delete(s)
+    audit(db, ctx.user.id, "source.deleted", "source", sid, request)
+    db.commit()
+    return ok({"deleted": True})
+
+
+# ---------------------------------------------------------------------------
+# Legislation and election records (FCT-wide, so not available to
+# council-scoped administrators)
+# ---------------------------------------------------------------------------
+
+
+def _fct_wide(ctx: AdminContext) -> None:
+    if ctx.admin.role.is_scoped:
+        raise forbidden("Legislative and election records are managed by FCT-wide administrators.")
+
+
+def _verification_rules(ctx: AdminContext, before: str | None, body) -> None:
+    if body.verification_status != before and before is not None and not ctx.has("records.verify"):
+        raise forbidden("You cannot change verification status.")
+    if body.verification_status == "verified" and not body.sources:
+        raise ApiError(422, "source_required", "A record can only be marked verified when at least one source is provided.")
+
+
+def _apply_simple(item, body, skip=("sources",)) -> None:
+    for k, v in body.model_dump(exclude=set(skip)).items():
+        setattr(item, k, v)
+
+
+def _crud(model, kind: str, schema, serializer, label: str, title_field: str = "title"):
+    """Register list/get/create/update/publish/unpublish/delete routes."""
+
+    def load(db: Session, rid: int):
+        r = db.get(model, rid)
+        if not r or r.deleted_at:
+            raise not_found(label)
+        return r
+
+    def out(db: Session, r) -> dict:
+        return serializer(r, ser.linked_sources(db, kind, [r.id])[r.id])
+
+    path = "/legislation" if kind == "legislation" else "/elections"
+
+    @router.get(path, name=f"admin_list_{kind}")
+    def list_items(
+        q: str | None = Query(None, max_length=100),
+        status: str | None = Query(None, pattern="^(draft|published)$"),
+        page: int = 1,
+        page_size: int = 50,
+        ctx: AdminContext = Depends(require("records.manage")),
+        db: Session = Depends(get_db),
+    ):
+        _fct_wide(ctx)
+        stmt = select(model).where(model.deleted_at.is_(None))
+        if q:
+            stmt = stmt.where(getattr(model, title_field).ilike(like_term(q)))
+        if status:
+            stmt = stmt.where(model.status == status)
+        page = max(page, 1)
+        page_size = max(1, min(page_size, 100))
+        total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+        rows = db.scalars(stmt.order_by(model.updated_at.desc()).offset((page - 1) * page_size).limit(page_size)).all()
+        src = ser.linked_sources(db, kind, [r.id for r in rows])
+        return ok([serializer(r, src[r.id]) for r in rows], page=page, page_size=page_size, total=total, total_pages=max(1, -(-total // page_size)))
+
+    @router.get(path + "/{rid}", name=f"admin_get_{kind}")
+    def get_item(rid: int, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+        _fct_wide(ctx)
+        return ok(out(db, load(db, rid)))
+
+    def create_item(body, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+        _fct_wide(ctx)
+        _verification_rules(ctx, None, body)
+        r = model(slug=unique_slug(db, model, body.title))
+        if kind == "legislation":
+            r.created_by_id = ctx.user.id
+        _apply_simple(r, body)
+        if body.verification_status == "verified" and not r.last_verified_at:
+            r.last_verified_at = utcnow()
+        db.add(r)
+        db.flush()
+        set_linked_sources(db, kind, r.id, body.sources)
+        audit(db, ctx.user.id, f"{kind}.created", kind, r.id, request)
+        db.commit()
+        return ok(out(db, r))
+
+    def update_item(rid: int, body, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+        _fct_wide(ctx)
+        r = load(db, rid)
+        before = r.verification_status
+        _verification_rules(ctx, before, body)
+        _apply_simple(r, body)
+        if body.verification_status == "verified" and before != "verified" and not body.last_verified_at:
+            r.last_verified_at = utcnow()
+        set_linked_sources(db, kind, r.id, body.sources)
+        audit(db, ctx.user.id, f"{kind}.updated", kind, r.id, request, verification=[before, r.verification_status])
+        db.commit()
+        return ok(out(db, r))
+
+    # The request schema differs per record type, so the body annotation is set
+    # here rather than written in the (closure) signature.
+    create_item.__annotations__["body"] = schema
+    update_item.__annotations__["body"] = schema
+    router.post(path, status_code=201, name=f"admin_create_{kind}")(create_item)
+    router.put(path + "/{rid}", name=f"admin_update_{kind}")(update_item)
+
+    @router.post(path + "/{rid}/publish", name=f"admin_publish_{kind}")
+    def publish_item(rid: int, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+        _fct_wide(ctx)
+        r = load(db, rid)
+        r.status = "published"
+        r.published_at = r.published_at or utcnow()
+        audit(db, ctx.user.id, f"{kind}.published", kind, r.id, request)
+        db.commit()
+        return ok(out(db, r))
+
+    @router.post(path + "/{rid}/unpublish", name=f"admin_unpublish_{kind}")
+    def unpublish_item(rid: int, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+        _fct_wide(ctx)
+        r = load(db, rid)
+        r.status = "draft"
+        audit(db, ctx.user.id, f"{kind}.unpublished", kind, r.id, request)
+        db.commit()
+        return ok(out(db, r))
+
+    @router.delete(path + "/{rid}", name=f"admin_delete_{kind}")
+    def delete_item(rid: int, request: Request, ctx: AdminContext = Depends(require("records.manage")), db: Session = Depends(get_db)):
+        _fct_wide(ctx)
+        r = load(db, rid)
+        r.deleted_at = utcnow()
+        r.status = "draft"
+        audit(db, ctx.user.id, f"{kind}.deleted", kind, r.id, request)
+        db.commit()
+        return ok({"deleted": True})
+
+
+_crud(LegislativeRecord, "legislation", LegislationIn, ser.legislation_admin, "Legislative record")
+_crud(ElectionRecord, "election", ElectionIn, ser.election_admin, "Election record")
+
+
+# ---------------------------------------------------------------------------
 # News
 # ---------------------------------------------------------------------------
 
@@ -514,12 +792,21 @@ def _apply_news(db: Session, n: News, body: NewsIn, ctx: AdminContext) -> None:
         raise ApiError(422, "invalid_category", "Unknown news category.")
     council = _council(db, body.area_council)
     _check_scope(ctx, council.id if council else None)
-    if body.content_label == "verified_information" and not body.source_note:
+    if body.content_label == "verified_information" and not (body.source_note or body.sources):
         raise ApiError(422, "source_required", "Content labelled as verified information must cite a source.")
-    for f in ("title", "excerpt", "body", "content_label", "source_note", "image_url", "image_alt", "author_name", "is_featured", "is_demo"):
+    if body.verification_status == "verified" and not body.sources:
+        raise ApiError(422, "source_required", "An article can only be marked verified when at least one source is linked.")
+    if body.verification_status != n.verification_status and n.id and not ctx.has("records.verify"):
+        raise forbidden("You cannot change verification status.")
+    fields = ("title", "excerpt", "body", "content_label", "source_note", "verification_status", "image_url", "image_alt", "author_name", "is_featured", "is_demo")
+    for f in fields:
         setattr(n, f, getattr(body, f))
     n.category_id = cat.id
     n.area_council_id = council.id if council else None
+
+
+def _news_out(db: Session, n: News) -> dict:
+    return ser.news_admin(n, ser.linked_sources(db, "news", [n.id])[n.id])
 
 
 def _news(db: Session, nid: int, ctx: AdminContext) -> News:
@@ -549,7 +836,7 @@ def admin_news(
 
 @router.get("/news/{nid}")
 def admin_news_item(nid: int, ctx: AdminContext = Depends(require("news.manage")), db: Session = Depends(get_db)):
-    return ok(ser.news_admin(_news(db, nid, ctx)))
+    return ok(_news_out(db, _news(db, nid, ctx)))
 
 
 @router.post("/news", status_code=201)
@@ -558,18 +845,21 @@ def create_news(body: NewsIn, request: Request, ctx: AdminContext = Depends(requ
     _apply_news(db, n, body, ctx)
     db.add(n)
     db.flush()
+    set_linked_sources(db, "news", n.id, body.sources)
     audit(db, ctx.user.id, "news.created", "news", n.id, request)
     db.commit()
-    return ok(ser.news_admin(n))
+    return ok(_news_out(db, n))
 
 
 @router.put("/news/{nid}")
 def update_news(nid: int, body: NewsIn, request: Request, ctx: AdminContext = Depends(require("news.manage")), db: Session = Depends(get_db)):
     n = _news(db, nid, ctx)
+    before = n.verification_status
     _apply_news(db, n, body, ctx)
-    audit(db, ctx.user.id, "news.updated", "news", n.id, request)
+    set_linked_sources(db, "news", n.id, body.sources)
+    audit(db, ctx.user.id, "news.updated", "news", n.id, request, verification=[before, n.verification_status])
     db.commit()
-    return ok(ser.news_admin(n))
+    return ok(_news_out(db, n))
 
 
 @router.post("/news/{nid}/publish")

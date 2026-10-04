@@ -11,13 +11,13 @@ from .. import serializers as ser
 from ..config import get_settings
 from ..database import get_db
 from ..deps import csrf_protect
-from ..models import AreaCouncil, ContactMessage, Discussion, Event, News, Project
+from ..models import AreaCouncil, ContactMessage, Discussion, Event, LegislativeRecord, News, Project
 from ..responses import ok
 from ..schemas import ContactIn
 from ..security import rate_limit
 from ..services.audit import audit
 from ..utils import like_term
-from .content import published_news, published_projects, visible_events
+from .content import published_legislation, published_news, published_projects, visible_events
 
 router = APIRouter(tags=["public"])
 
@@ -25,7 +25,7 @@ router = APIRouter(tags=["public"])
 @router.get("/api/search")
 def search(
     q: str = Query(min_length=2, max_length=100),
-    type: str | None = Query(None, pattern="^(records|news|events|councils|discussions)$"),
+    type: str | None = Query(None, pattern="^(records|legislation|news|events|councils|discussions)$"),
     limit: int = Query(5, ge=1, le=20),
     db: Session = Depends(get_db),
     _rl: None = Depends(rate_limit("search", 60, 60)),
@@ -41,6 +41,22 @@ def search(
                 .order_by(Project.published_at.desc())
                 .limit(limit)
             ).unique()
+        ]
+    if type in (None, "legislation"):
+        out["legislation"] = [
+            ser.legislation(r)
+            for r in db.scalars(
+                published_legislation()
+                .where(
+                    or_(
+                        LegislativeRecord.title.ilike(t),
+                        LegislativeRecord.description.ilike(t),
+                        LegislativeRecord.bill_number.ilike(t),
+                    )
+                )
+                .order_by(LegislativeRecord.title)
+                .limit(limit)
+            )
         ]
     if type in (None, "news"):
         out["news"] = [
@@ -99,7 +115,7 @@ def contact(body: ContactIn, request: Request, db: Session = Depends(get_db)):
 
 
 STATIC_PATHS = [
-    "/", "/philip-aduda", "/about", "/our-record", "/area-councils", "/news", "/events", "/community", "/contact",
+    "/", "/philip-aduda", "/about", "/our-record", "/legislation", "/elections", "/area-councils", "/news", "/events", "/community", "/contact",
     "/join", "/privacy", "/terms", "/community-guidelines",
 ]
 
@@ -111,6 +127,7 @@ def sitemap(db: Session = Depends(get_db)):
     urls = [f"{base}{p}" for p in STATIC_PATHS]
     urls += [f"{base}/area-councils/{s}" for s in db.scalars(select(AreaCouncil.slug)).all()]
     urls += [f"{base}/our-record/{p.slug}" for p in db.scalars(published_projects()).unique()]
+    urls += [f"{base}/legislation/{r.slug}" for r in db.scalars(published_legislation())]
     urls += [f"{base}/news/{n.slug}" for n in db.scalars(published_news()).unique()]
     urls += [f"{base}/events/{e.slug}" for e in db.scalars(visible_events()).unique()]
     body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

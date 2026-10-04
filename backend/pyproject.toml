@@ -11,6 +11,10 @@ target-version = "py311"
 select = ["E", "F", "I", "B", "UP"]
 ignore = ["E501", "E731", "B008", "B904", "UP007"]
 
+[tool.ruff.lint.isort]
+# The local alembic/ folder holds migrations; the import is the library.
+known-third-party = ["alembic"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = ["ignore::DeprecationWarning"]

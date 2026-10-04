@@ -1,13 +1,13 @@
-import { AlertTriangle, BadgeCheck, CircleDashed, Clock, FlaskConical } from "lucide-react";
-import { CONTENT_LABELS, VERIFICATION } from "@/lib/constants";
-import type { ContentLabel, VerificationStatus } from "@/lib/types";
+import { AlertTriangle, BadgeCheck, CircleDashed, FlaskConical, Megaphone, Newspaper } from "lucide-react";
+import { CONTENT_LABELS, LEGISLATIVE_STAGES, PROJECT_STATUS, VERIFICATION } from "@/lib/constants";
+import type { ContentLabel, LegislativeStage, ProjectStatus, VerificationStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const V_ICONS = { verified: BadgeCheck, pending_review: Clock, unverified: CircleDashed, disputed: AlertTriangle };
+const V_ICONS = { verified: BadgeCheck, reported: Newspaper, self_reported: Megaphone, pending: CircleDashed, disputed: AlertTriangle };
 
 export function VerificationBadge({ status, className }: { status: VerificationStatus; className?: string }) {
-  const v = VERIFICATION[status];
-  const Icon = V_ICONS[status];
+  const v = VERIFICATION[status] ?? VERIFICATION.pending;
+  const Icon = V_ICONS[status] ?? CircleDashed;
   return (
     <span
       className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset", v.tone, className)}
@@ -36,6 +36,22 @@ export function DemoBadge({ className }: { className?: string }) {
     >
       <FlaskConical className="size-3" aria-hidden />
       Sample
+    </span>
+  );
+}
+
+const pill = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset";
+
+export function ProjectStatusBadge({ status, className }: { status: ProjectStatus; className?: string }) {
+  const s = PROJECT_STATUS[status] ?? PROJECT_STATUS.pending;
+  return <span className={cn(pill, s.tone, className)}>{s.label}</span>;
+}
+
+export function StageBadge({ stage, className }: { stage: LegislativeStage; className?: string }) {
+  const s = LEGISLATIVE_STAGES[stage] ?? LEGISLATIVE_STAGES.pending;
+  return (
+    <span className={cn(pill, s.tone, className)} title={s.description}>
+      {s.label}
     </span>
   );
 }

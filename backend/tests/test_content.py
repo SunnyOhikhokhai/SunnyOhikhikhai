@@ -18,7 +18,7 @@ def test_records_filters_and_detail(api):
     assert api.get("/api/projects", params={"q": "water"}).json()["meta"]["total"] == 1
     slug = r["data"][0]["slug"]
     d = api.get(f"/api/projects/{slug}").json()["data"]
-    assert d["verification_status"] == "unverified"
+    assert d["verification_status"] == "pending"
     assert "[VERIFIED PROJECT INFORMATION TO BE ADDED]" in d["description"]
     assert "related" in d
 
