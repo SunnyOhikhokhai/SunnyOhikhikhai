@@ -5,6 +5,7 @@
 > 2. Download the project ZIP, extract it to your Desktop, and rename the folder to `NIPAM`.
 > 3. Double-click **`START-NIPAM.bat`** in that folder. It sets everything up and opens the site at http://localhost:5173.
 > 4. To edit in VS Code: **File → Open Folder → Desktop → NIPAM**.
+> 5. **Updates:** if the folder is linked to GitHub (a `.git` folder exists), `START-NIPAM.bat` downloads the latest version each time it starts. To link a folder that came from a ZIP, run these once in the folder: `git init`, `git remote add origin https://github.com/SunnyOhikhokhai/SunnyOhikhikhai.git`, `git fetch origin`, `git reset --hard origin/main`, `git branch -M main`, `git branch -u origin/main`. Your database and installed packages are kept.
 
 The digital home of NIPAM, the support movement for **Sen. Philip Aduda**. It is a mobile-first platform that unites supporters across the six Area Councils of the Federal Capital Territory (FCT), Nigeria, shares his record, and spreads his message.
 
