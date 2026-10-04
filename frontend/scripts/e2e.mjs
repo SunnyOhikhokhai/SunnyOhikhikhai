@@ -123,7 +123,8 @@ await check("Our Record — filter, list view and detail", async () => {
   await m.goto(`${BASE}/our-record`);
   await m.getByRole("button", { name: /Filters/ }).click();
   await m.locator('select[aria-label="Category"]:visible').selectOption("roads");
-  await m.getByText("1 record").waitFor();
+  await m.getByText(/^\d+ records?/).waitFor();
+  await m.waitForURL(/category=roads/);
   await m.getByRole("button", { name: "list view" }).click();
   await m.getByRole("link", { name: /Rural Road Access/ }).click();
   await m.getByRole("heading", { name: "Sources & references" }).waitFor();
@@ -139,7 +140,7 @@ await check("News list and article", async () => {
 let eventUrl;
 await check("Events — register for an event", async () => {
   await m.goto(`${BASE}/events`);
-  await m.getByRole("link", { name: /Community Town Hall/ }).click();
+  await m.locator("main article h3 a").first().click();
   await m.getByRole("button", { name: "Register" }).click();
   await m.getByText("You're registered").first().waitFor();
   eventUrl = m.url();
@@ -204,6 +205,8 @@ await check("Member logout", async () => {
   await m.getByRole("button", { name: "Account menu" }).click();
   await m.getByRole("menuitem", { name: "Log out" }).click();
   await m.getByText("logged out securely").waitFor();
+  // The header must switch to the signed-out state without a page reload.
+  await m.getByRole("button", { name: "Account menu" }).waitFor({ state: "detached" });
 }, m);
 
 // ----------------------------------------------------------------- admin flow

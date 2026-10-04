@@ -31,8 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await api.post("/api/auth/logout").catch(() => undefined);
-    qc.clear();
+    // Update the signed-in user in place (the header is subscribed to this
+    // query), then drop every other cached query so no private data lingers.
     qc.setQueryData(["me"], { user: null, sms_enabled: data?.sms_enabled ?? false });
+    qc.removeQueries({ predicate: (q) => q.queryKey[0] !== "me" });
   }, [qc, data?.sms_enabled]);
 
   const value = useMemo<AuthState>(
