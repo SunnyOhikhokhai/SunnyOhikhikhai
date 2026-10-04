@@ -1,5 +1,11 @@
 # NIPAM — Non-Indigenes for Philip Aduda Movement
 
+> **Quick start on Windows (no commands needed)**
+> 1. Install [Python](https://www.python.org/downloads/) (tick **"Add python.exe to PATH"**) and [Node.js LTS](https://nodejs.org).
+> 2. Download the project ZIP, extract it to your Desktop, and rename the folder to `NIPAM`.
+> 3. Double-click **`START-NIPAM.bat`** in that folder. It sets everything up and opens the site at http://localhost:5173.
+> 4. To edit in VS Code: **File → Open Folder → Desktop → NIPAM**.
+
 The digital home of NIPAM, the support movement for **Sen. Philip Aduda**. It is a mobile-first platform that unites supporters across the six Area Councils of the Federal Capital Territory (FCT), Nigeria, shares his record, and spreads his message.
 
 | Part | Stack |
