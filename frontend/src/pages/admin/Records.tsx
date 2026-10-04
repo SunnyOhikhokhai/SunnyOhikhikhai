@@ -3,7 +3,7 @@ import { ExternalLink, FilePlus2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { DemoBadge, VerificationBadge } from "@/components/shared/badges";
+import { DemoBadge, ProjectStatusBadge, VerificationBadge } from "@/components/shared/badges";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useConfirm } from "@/components/ui/confirm";
@@ -13,8 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useMeta } from "@/hooks/useMeta";
 import { api, ApiError, getData } from "@/lib/api";
-import { VERIFICATION } from "@/lib/constants";
-import type { RecordDetail, VerificationStatus } from "@/lib/types";
+import { PROJECT_STATUS, VERIFICATION } from "@/lib/constants";
+import type { ProjectStatus, RecordDetail, VerificationStatus } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 import { FormSection, MarkdownEditor, UploadButton } from "./editor-kit";
 import { AdminTitle, DataTable, SearchBox, StatusBadge, useAdminList, useSearchState } from "./shared";
@@ -32,8 +32,13 @@ const EMPTY = {
   record_date: "",
   summary: "",
   description: "",
-  verification_status: "unverified" as VerificationStatus,
+  verification_status: "pending" as VerificationStatus,
   verification_note: "",
+  project_status: "pending" as ProjectStatus,
+  status_note: "",
+  category_label: "",
+  reported_cost: "",
+  reported_length: "",
   is_featured: false,
   is_demo: false,
   sources: [] as Src[],
@@ -48,7 +53,7 @@ function RecordList() {
   const { data, isLoading, error, refetch } = useAdminList<RecordDetail>("records", "/api/admin/projects", { q: dq, status, page });
   return (
     <>
-      <AdminTitle title="Our Record" description="Evidence-oriented records. Every factual claim should cite a source." actions={<Button asChild><Link to="new"><FilePlus2 /> New record</Link></Button>} />
+      <AdminTitle title="Constituency projects" description="Every factual claim cites a source. Keep the source's own wording for status, cost and length." actions={<Button asChild><Link to="new"><FilePlus2 /> New project</Link></Button>} />
       <div className="mb-5 flex flex-wrap gap-2">
         <SearchBox value={q} onChange={setQ} placeholder="Search records" />
         <Select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 w-40" aria-label="Status"><option value="">All</option><option value="draft">Drafts</option><option value="published">Published</option></Select>
@@ -66,6 +71,7 @@ function RecordList() {
           { header: "Title", cell: (r) => <Link to={String(r.id)} className="font-semibold text-navy hover:text-green-600">{r.title}</Link> },
           { header: "Council", cell: (r) => r.area_council?.short_name ?? "FCT" },
           { header: "Verification", cell: (r) => <VerificationBadge status={r.verification_status} /> },
+          { header: "Project status", cell: (r) => <ProjectStatusBadge status={r.project_status} /> },
           { header: "Sources", cell: (r) => r.sources.length },
           { header: "Status", cell: (r) => <span className="flex gap-1"><StatusBadge status={r.status ?? "draft"} />{r.is_demo && <DemoBadge />}</span> },
           { header: "Updated", cell: (r) => formatDate(r.updated_at) },
@@ -99,6 +105,11 @@ function RecordEditor() {
       description: existing.description,
       verification_status: existing.verification_status,
       verification_note: existing.verification_note ?? "",
+      project_status: existing.project_status,
+      status_note: existing.status_note ?? "",
+      category_label: existing.category_label ?? "",
+      reported_cost: existing.reported_cost ?? "",
+      reported_length: existing.reported_length ?? "",
       is_featured: existing.is_featured,
       is_demo: existing.is_demo,
       sources: existing.sources.map((s) => ({ title: s.title, publisher: s.publisher ?? "", url: s.url ?? "", published_on: s.published_on ?? "", notes: s.notes ?? "" })),
@@ -114,6 +125,10 @@ function RecordEditor() {
     year: f.year ? Number(f.year) : null,
     record_date: f.record_date || null,
     verification_note: f.verification_note || null,
+    status_note: f.status_note || null,
+    category_label: f.category_label || null,
+    reported_cost: f.reported_cost || null,
+    reported_length: f.reported_length || null,
     sources: f.sources.map((s) => ({ ...s, publisher: s.publisher || null, url: s.url || null, published_on: s.published_on || null, notes: s.notes || null })),
     images: f.images.map((i) => ({ ...i, caption: i.caption || null, credit: i.credit || null })),
     documents: f.documents.map((d) => ({ ...d, file_type: d.file_type || null })),
@@ -168,6 +183,11 @@ function RecordEditor() {
                 <Field id="r-date" label="Exact date" optional><Input type="date" value={f.record_date} onChange={(e) => set("record_date", e.target.value)} /></Field>
               </div>
             </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field id="r-catl" label="Category as worded by the source" optional hint="e.g. Roads / Drainage"><Input value={f.category_label} onChange={(e) => set("category_label", e.target.value)} maxLength={120} /></Field>
+              <Field id="r-cost" label="Reported value" optional hint="As reported, e.g. approximately ₦1.4 billion"><Input value={f.reported_cost} onChange={(e) => set("reported_cost", e.target.value)} maxLength={120} /></Field>
+              <Field id="r-len" label="Reported length" optional hint="e.g. 6 km"><Input value={f.reported_length} onChange={(e) => set("reported_length", e.target.value)} maxLength={60} /></Field>
+            </div>
             <Field id="r-summary" label="Short description" hint="Shown on cards (max 400 characters)."><Input value={f.summary} onChange={(e) => set("summary", e.target.value)} maxLength={400} /></Field>
             <div className="space-y-1.5"><label htmlFor="r-desc" className="text-sm font-semibold text-navy-900">Full description</label><MarkdownEditor id="r-desc" value={f.description} onChange={(v) => set("description", v)} /></div>
           </FormSection>
@@ -220,9 +240,18 @@ function RecordEditor() {
                 {Object.entries(VERIFICATION).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </Select>
             </Field>
-            <p className="text-xs text-muted-foreground">{VERIFICATION[f.verification_status].description}</p>
+            <p className="text-xs text-muted-foreground">{(VERIFICATION[f.verification_status] ?? VERIFICATION.pending).description}</p>
+            {existing?.last_verified_at && <p className="text-xs text-muted-foreground">Last verified {formatDate(existing.last_verified_at)}</p>}
             <Field id="r-vnote" label="Verification note" optional><Input value={f.verification_note} onChange={(e) => set("verification_note", e.target.value)} /></Field>
             {f.verification_status === "verified" && !f.sources.length && <p className="text-sm font-medium text-red-600">Add at least one source to mark this record verified.</p>}
+          </FormSection>
+          <FormSection title="Project status" description="Only change this when a source supports it. Never upgrade “ongoing” to “completed” without evidence.">
+            <Field id="r-pstatus" label="Status">
+              <Select value={f.project_status} onChange={(e) => set("project_status", e.target.value as ProjectStatus)}>
+                {Object.entries(PROJECT_STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+              </Select>
+            </Field>
+            <Field id="r-snote" label="Status in the source's words" optional hint="e.g. Reported ongoing in 2023."><Input value={f.status_note} onChange={(e) => set("status_note", e.target.value)} maxLength={300} /></Field>
           </FormSection>
           <FormSection title="Display">
             <label className="flex items-start gap-3 text-sm"><Checkbox checked={f.is_featured} onCheckedChange={(v) => set("is_featured", v === true)} /> <span><strong className="text-navy">Featured</strong><br /><span className="text-muted-foreground">Show in the homepage carousel.</span></span></label>

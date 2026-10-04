@@ -52,7 +52,7 @@ if not exist ".venv\Scripts\python.exe" (
 if errorlevel 1 goto :failed
 
 echo  [2/4] Preparing the database and content...
-".venv\Scripts\python.exe" -m app.seed --create-tables --demo --aduda
+".venv\Scripts\python.exe" -m app.seed --create-tables --demo --content-pack
 if errorlevel 1 goto :failed
 
 echo  [3/4] Preparing the website (first run takes a few minutes)...

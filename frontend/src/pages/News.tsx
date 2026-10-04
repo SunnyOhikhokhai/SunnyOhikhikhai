@@ -3,13 +3,13 @@ import { Newspaper, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CoverArt } from "@/components/brand/Artwork";
-import { ContentLabelBadge, DemoBadge } from "@/components/shared/badges";
+import { ContentLabelBadge, DemoBadge, VerificationBadge } from "@/components/shared/badges";
 import { NewsCard } from "@/components/shared/cards";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Pagination } from "@/components/shared/Pagination";
 import { Seo } from "@/components/shared/Seo";
 import { EmptyState, ErrorState } from "@/components/shared/states";
-import { Input } from "@/components/ui/input";
+import { Input, Select } from "@/components/ui/input";
 import { CardSkeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMeta } from "@/hooks/useMeta";
@@ -41,14 +41,20 @@ export default function News() {
     placeholderData: keepPreviousData,
   });
 
-  const setCategory = (slug: string) => {
+  const setParam = (key: string, value: string) => {
     const next = new URLSearchParams(params);
-    if (slug) next.set("category", slug);
-    else next.delete("category");
+    if (value) next.set(key, value);
+    else next.delete(key);
     next.delete("page");
     setParams(next);
   };
-  const lead = page === 1 && !category && !dq ? data?.data[0] : undefined;
+  const setCategory = (slug: string) => setParam("category", slug);
+  const filtered = !!(category || dq || params.get("month") || params.get("area_council"));
+  const lead = page === 1 && !filtered ? data?.data[0] : undefined;
+  const monthLabel = (m: string) => {
+    const [y, mo] = m.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-NG", { month: "long", year: "numeric" }).format(new Date(y, mo - 1, 1));
+  };
   const rest = lead ? data?.data.slice(1) : data?.data;
 
   return (
@@ -73,10 +79,24 @@ export default function News() {
               </button>
             ))}
           </div>
-          <div className="relative lg:w-72">
+        </div>
+        <div className="-mt-4 mb-8 grid gap-2 sm:grid-cols-3">
+          <div className="relative">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search news" className="pl-10" aria-label="Search news" />
           </div>
+          <Select aria-label="Date" value={params.get("month") ?? ""} onChange={(e) => setParam("month", e.target.value)}>
+            <option value="">Any date</option>
+            {meta.data?.news_months.map((m) => (
+              <option key={m} value={m}>{monthLabel(m)}</option>
+            ))}
+          </Select>
+          <Select aria-label="Area Council" value={params.get("area_council") ?? ""} onChange={(e) => setParam("area_council", e.target.value)}>
+            <option value="">All Area Councils</option>
+            {meta.data?.area_councils.map((c) => (
+              <option key={c.slug} value={c.slug}>{c.name}</option>
+            ))}
+          </Select>
         </div>
 
         {error ? (
@@ -99,6 +119,7 @@ export default function News() {
                 <div className="flex flex-col justify-center gap-3 p-6 sm:p-10">
                   <div className="flex flex-wrap gap-2">
                     <ContentLabelBadge label={lead.content_label} />
+                    {lead.verification_status && <VerificationBadge status={lead.verification_status} />}
                     {lead.is_demo && <DemoBadge />}
                   </div>
                   <h2 className="text-2xl font-extrabold leading-tight sm:text-3xl">

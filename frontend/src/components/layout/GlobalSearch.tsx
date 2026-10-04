@@ -1,15 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CalendarDays, FileText, Loader2, MapPin, MessageSquare, Newspaper, Search } from "lucide-react";
+import { ArrowRight, CalendarDays, FileText, Gavel, Loader2, MapPin, MessageSquare, Newspaper, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useDebounce } from "@/hooks/useDebounce";
 import { api } from "@/lib/api";
-import type { CouncilRef, DiscussionItem, EventItem, NewsCard, RecordCard } from "@/lib/types";
+import type { CouncilRef, DiscussionItem, EventItem, LegislationRecord, NewsCard, RecordCard } from "@/lib/types";
+import { LEGISLATIVE_STAGES } from "@/lib/constants";
 import { formatDate } from "@/lib/utils";
 
 export interface SearchResults {
   records: RecordCard[];
+  legislation: LegislationRecord[];
   news: NewsCard[];
   events: EventItem[];
   councils: CouncilRef[];
@@ -36,7 +38,8 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
 
   const groups: { key: keyof SearchResults; label: string; icon: typeof FileText; to: (x: never) => string; title: (x: never) => string; sub: (x: never) => string }[] = [
     { key: "councils", label: "Area Councils", icon: MapPin, to: (c: CouncilRef) => `/area-councils/${c.slug}`, title: (c: CouncilRef) => c.name, sub: () => "Area Council" },
-    { key: "records", label: "Our Record", icon: FileText, to: (r: RecordCard) => `/our-record/${r.slug}`, title: (r: RecordCard) => r.title, sub: (r: RecordCard) => `${r.category.name} · ${r.area_council?.short_name ?? "FCT"}` },
+    { key: "records", label: "Projects", icon: FileText, to: (r: RecordCard) => `/our-record/${r.slug}`, title: (r: RecordCard) => r.title, sub: (r: RecordCard) => `${r.category.name} · ${r.area_council?.short_name ?? "FCT"}` },
+    { key: "legislation", label: "Legislation", icon: Gavel, to: (r: LegislationRecord) => `/legislation/${r.slug}`, title: (r: LegislationRecord) => r.title, sub: (r: LegislationRecord) => `${r.bill_number ? `${r.bill_number} · ` : ""}${LEGISLATIVE_STAGES[r.legislative_stage]?.label ?? ""}` },
     { key: "news", label: "News", icon: Newspaper, to: (n: NewsCard) => `/news/${n.slug}`, title: (n: NewsCard) => n.title, sub: (n: NewsCard) => `${n.category.name} · ${formatDate(n.published_at)}` },
     { key: "events", label: "Events", icon: CalendarDays, to: (e: EventItem) => `/events/${e.slug}`, title: (e: EventItem) => e.title, sub: (e: EventItem) => formatDate(e.starts_at) },
     { key: "discussions", label: "Community", icon: MessageSquare, to: (d: DiscussionItem) => `/community/${d.id}`, title: (d: DiscussionItem) => d.title, sub: (d: DiscussionItem) => d.category.name },
@@ -62,7 +65,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
             autoFocus
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search records, news, events, councils…"
+            placeholder="Search projects, bills, news, events…"
             className="flex-1 bg-transparent text-base outline-none placeholder:text-slate-400"
             aria-label="Search"
           />

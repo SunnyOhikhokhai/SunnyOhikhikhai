@@ -3,7 +3,7 @@ import { ExternalLink, FilePlus2, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { ContentLabelBadge, DemoBadge } from "@/components/shared/badges";
+import { ContentLabelBadge, DemoBadge, VerificationBadge } from "@/components/shared/badges";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useConfirm } from "@/components/ui/confirm";
@@ -13,10 +13,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useMeta } from "@/hooks/useMeta";
 import { api, getData } from "@/lib/api";
-import { CONTENT_LABELS } from "@/lib/constants";
-import type { ContentLabel, NewsDetail } from "@/lib/types";
+import { CONTENT_LABELS, VERIFICATION } from "@/lib/constants";
+import type { ContentLabel, NewsDetail, VerificationStatus } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
-import { FormSection, MarkdownEditor, UploadButton } from "./editor-kit";
+import { FormSection, LinkedSourcesEditor, MarkdownEditor, UploadButton, linkedPayload, toLinked, type LinkedSrc } from "./editor-kit";
+import { errorText } from "./LegislationAdmin";
 import { AdminTitle, DataTable, SearchBox, StatusBadge, useAdminList, useSearchState } from "./shared";
 
 function NewsList() {
@@ -44,6 +45,7 @@ function NewsList() {
           { header: "Title", cell: (n) => <Link to={String(n.id)} className="font-semibold text-navy hover:text-green-600">{n.title}</Link> },
           { header: "Category", cell: (n) => n.category.name },
           { header: "Label", cell: (n) => <ContentLabelBadge label={n.content_label} /> },
+          { header: "Verification", cell: (n) => (n.verification_status ? <VerificationBadge status={n.verification_status} /> : "—") },
           { header: "Status", cell: (n) => <span className="flex gap-1"><StatusBadge status={n.status ?? "draft"} />{n.is_demo && <DemoBadge />}</span> },
           { header: "Views", cell: (n) => n.view_count ?? 0 },
           { header: "Published", cell: (n) => (n.published_at ? formatDate(n.published_at) : "—") },
@@ -65,18 +67,19 @@ function NewsEditor() {
   const [f, setF] = useState({
     title: "", excerpt: "", body: "", category: "nipam-updates", area_council: scoped, content_label: "update" as ContentLabel,
     source_note: "", image_url: "", image_alt: "", author_name: "NIPAM Editorial Team", is_featured: false, is_demo: false,
+    verification_status: "" as VerificationStatus | "", sources: [] as LinkedSrc[],
   });
   const { data: n, isLoading } = useQuery({ queryKey: ["admin", "news-item", id], queryFn: () => getData<NewsDetail>(`/api/admin/news/${id}`), enabled: !isNew });
   useEffect(() => {
-    if (n) setF({ title: n.title, excerpt: n.excerpt, body: n.body, category: n.category.slug, area_council: n.area_council?.slug ?? "", content_label: n.content_label, source_note: n.source_note ?? "", image_url: n.image_url ?? "", image_alt: n.image_alt ?? "", author_name: n.author_name, is_featured: n.is_featured, is_demo: n.is_demo });
+    if (n) setF({ title: n.title, excerpt: n.excerpt, body: n.body, category: n.category.slug, area_council: n.area_council?.slug ?? "", content_label: n.content_label, source_note: n.source_note ?? "", image_url: n.image_url ?? "", image_alt: n.image_alt ?? "", author_name: n.author_name, is_featured: n.is_featured, is_demo: n.is_demo, verification_status: n.verification_status ?? "", sources: n.sources.map(toLinked) });
   }, [n]);
   const set = <K extends keyof typeof f>(k: K, v: (typeof f)[K]) => setF((x) => ({ ...x, [k]: v }));
-  const body = () => ({ ...f, area_council: f.area_council || null, source_note: f.source_note || null, image_url: f.image_url || null, image_alt: f.image_alt || null });
+  const body = () => ({ ...f, area_council: f.area_council || null, source_note: f.source_note || null, image_url: f.image_url || null, image_alt: f.image_alt || null, verification_status: f.verification_status || null, sources: linkedPayload(f.sources) });
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin"] });
   const save = useMutation({
     mutationFn: () => (isNew ? api.post<{ data: NewsDetail }>("/api/admin/news", body()) : api.put<{ data: NewsDetail }>(`/api/admin/news/${id}`, body())),
     onSuccess: (r) => { toast.success("Article saved"); invalidate(); if (isNew) navigate(`/admin/news/${r.data.id}`, { replace: true }); },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (e: Error) => toast.error(errorText(e)),
   });
   const act = useMutation({
     mutationFn: (a: string) => api.post(`/api/admin/news/${id}/${a}`),
@@ -102,6 +105,11 @@ function NewsEditor() {
           <Field id="n-title" label="Title"><Input value={f.title} onChange={(e) => set("title", e.target.value)} required minLength={4} /></Field>
           <Field id="n-excerpt" label="Summary" hint="Shown on cards and in search results."><Input value={f.excerpt} onChange={(e) => set("excerpt", e.target.value)} maxLength={400} /></Field>
           <div className="space-y-1.5"><label htmlFor="n-body" className="text-sm font-semibold text-navy-900">Body</label><MarkdownEditor id="n-body" value={f.body} onChange={(v) => set("body", v)} rows={16} /></div>
+          <div className="space-y-2 border-t border-border pt-4">
+            <p className="text-sm font-semibold text-navy-900">Sources</p>
+            <p className="text-xs text-muted-foreground">Link every source the article relies on. Required before an article can be marked Verified.</p>
+            <LinkedSourcesEditor value={f.sources} onChange={(v) => set("sources", v)} />
+          </div>
         </FormSection>
         <aside className="space-y-6">
           <FormSection title="Classification">
@@ -109,7 +117,13 @@ function NewsEditor() {
             <Field id="n-label" label="Content label" hint="Distinguishes verified information from announcements and opinion.">
               <Select value={f.content_label} onChange={(e) => set("content_label", e.target.value as ContentLabel)}>{Object.entries(CONTENT_LABELS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</Select>
             </Field>
-            <Field id="n-source" label="Source" optional={f.content_label !== "verified_information"} hint="e.g. According to … / Published by …"><Input value={f.source_note} onChange={(e) => set("source_note", e.target.value)} required={f.content_label === "verified_information"} /></Field>
+            <Field id="n-ver" label="Verification" optional hint="Leave blank for items that make no factual claim, such as a meeting notice.">
+              <Select value={f.verification_status} onChange={(e) => set("verification_status", e.target.value as VerificationStatus | "")}>
+                <option value="">Not applicable</option>
+                {Object.entries(VERIFICATION).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+              </Select>
+            </Field>
+            <Field id="n-source" label="Source summary" optional={f.content_label !== "verified_information"} hint="e.g. According to … / Published by …"><Input value={f.source_note} onChange={(e) => set("source_note", e.target.value)} required={f.content_label === "verified_information"} /></Field>
             <Field id="n-council" label="Area Council"><Select value={f.area_council} disabled={!!scoped} onChange={(e) => set("area_council", e.target.value)}><option value="">FCT-wide</option>{meta.data?.area_councils.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}</Select></Field>
             <Field id="n-author" label="Author / editor"><Input value={f.author_name} onChange={(e) => set("author_name", e.target.value)} /></Field>
           </FormSection>

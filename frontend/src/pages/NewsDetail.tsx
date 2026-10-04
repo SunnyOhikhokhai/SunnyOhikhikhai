@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Info } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { ContentLabelBadge, DemoBadge } from "@/components/shared/badges";
+import { ContentLabelBadge, DemoBadge, VerificationBadge } from "@/components/shared/badges";
+import { SourceLine, SourceList } from "@/components/shared/SourceLine";
 import { NewsCard } from "@/components/shared/cards";
 import { Markdown } from "@/components/shared/Markdown";
 import { Seo } from "@/components/shared/Seo";
@@ -44,6 +45,7 @@ export default function NewsDetail() {
         <div className="mt-6 flex flex-wrap gap-2">
           <Badge variant="outline">{n.category.name}</Badge>
           <ContentLabelBadge label={n.content_label} />
+          {n.verification_status && <VerificationBadge status={n.verification_status} />}
           {n.area_council && <Badge>{n.area_council.name}</Badge>}
           {n.is_demo && <DemoBadge />}
         </div>
@@ -63,11 +65,19 @@ export default function NewsDetail() {
       )}
       <div className="container max-w-3xl py-8">
         <Markdown>{n.body}</Markdown>
-        {n.source_note && (
-          <p className="mt-8 flex gap-2 rounded-xl bg-surface p-4 text-sm text-slate-600 ring-1 ring-border">
-            <Info className="mt-0.5 size-4 shrink-0 text-green-600" />
-            <span><strong className="text-navy">Source:</strong> {n.source_note}</span>
-          </p>
+        {n.sources.length > 0 ? (
+          <section className="mt-10 rounded-2xl bg-surface p-5 ring-1 ring-border" aria-labelledby="sources">
+            <SourceLine source={n.sources[0].name} sourceUrl={n.sources[0].url} verification={n.verification_status} updated={n.updated_at} />
+            <h2 id="sources" className="mb-3 mt-5 border-t border-border pt-4 text-base font-bold">Sources</h2>
+            <SourceList sources={n.sources} />
+          </section>
+        ) : (
+          n.source_note && (
+            <p className="mt-8 flex gap-2 rounded-xl bg-surface p-4 text-sm text-slate-600 ring-1 ring-border">
+              <Info className="mt-0.5 size-4 shrink-0 text-green-600" />
+              <span><strong className="text-navy">Source:</strong> {n.source_note}</span>
+            </p>
+          )
         )}
         {n.content_label === "opinion" && (
           <p className="mt-4 text-sm italic text-slate-500">This article is opinion and reflects the views of its author.</p>

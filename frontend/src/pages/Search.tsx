@@ -9,10 +9,12 @@ import { EmptyState } from "@/components/shared/states";
 import { Input } from "@/components/ui/input";
 import { CardSkeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { LegislationCard } from "./Legislation";
 
 const TYPES = [
   ["", "All"],
-  ["records", "Records"],
+  ["records", "Projects"],
+  ["legislation", "Legislation"],
   ["news", "News"],
   ["events", "Events"],
   ["councils", "Area Councils"],
@@ -49,7 +51,7 @@ export default function SearchPage() {
       <PageHeader eyebrow="Search" title="Search NIPAM" crumbs={[{ to: "/", label: "Home" }, { label: "Search" }]}>
         <div className="relative mt-8 max-w-2xl">
           <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
-          <Input autoFocus type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search records, news, events, councils and discussions" className="h-14 pl-12 text-base" aria-label="Search" />
+          <Input autoFocus type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search projects, legislation, news, events, councils and discussions" className="h-14 pl-12 text-base" aria-label="Search" />
         </div>
       </PageHeader>
       <div className="container py-8">
@@ -79,6 +81,7 @@ export default function SearchPage() {
                 </div>
               ))}
               {section("Our Record", r.records?.length ?? 0, <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{r.records?.map((x) => <RecordCard key={x.id} record={x} />)}</div>)}
+              {section("Legislation", r.legislation?.length ?? 0, <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{r.legislation?.map((x) => <LegislationCard key={x.id} r={x} />)}</div>)}
               {section("News", r.news?.length ?? 0, <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{r.news?.map((x) => <NewsCard key={x.id} item={x} />)}</div>)}
               {section("Events", r.events?.length ?? 0, <div className="grid gap-4 md:grid-cols-2">{r.events?.map((x) => <EventCard key={x.id} event={x} />)}</div>)}
               {section("Community", r.discussions?.length ?? 0, <div className="space-y-4">{r.discussions?.map((x) => <DiscussionRow key={x.id} d={x} />)}</div>)}

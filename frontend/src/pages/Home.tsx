@@ -4,12 +4,17 @@ import {
   BadgeCheck,
   BookOpenCheck,
   FileSearch,
+  Gavel,
+  GraduationCap,
   Handshake,
+  HeartPulse,
+  Landmark,
+  MapPinned,
   Megaphone,
   MessageSquare,
   ShieldCheck,
-  Sparkles,
   Users,
+  Vote,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SkylineArt } from "@/components/brand/Artwork";
@@ -23,10 +28,27 @@ import { Button } from "@/components/ui/button";
 import { CardSkeleton, Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { getData } from "@/lib/api";
-import type { Announcement, Council, PrincipalProfile, DiscussionItem, EventItem, NewsCard as NewsCardT, RecordCard as RecordCardT } from "@/lib/types";
+import { VerificationBadge } from "@/components/shared/badges";
+import type {
+  Announcement,
+  Council,
+  DiscussionItem,
+  ElectionRecord,
+  EventItem,
+  NewsCard as NewsCardT,
+  PrincipalProfile,
+  RecordCard as RecordCardT,
+} from "@/lib/types";
+import { formatDate } from "@/lib/utils";
+import { SelfReportedMetrics } from "./Aduda";
 
 interface HomeData {
-  profile: Pick<PrincipalProfile, "name" | "title" | "tagline" | "summary" | "photo_url" | "photo_alt">;
+  profile: Pick<
+    PrincipalProfile,
+    "name" | "title" | "tagline" | "summary" | "photo_url" | "photo_alt" | "badges" | "metrics" | "metrics_note" | "metrics_source_url"
+  >;
+  election: ElectionRecord | null;
+  legislation_count: number;
   featured: RecordCardT[];
   councils: Council[];
   news: NewsCardT[];
@@ -72,8 +94,8 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
           </h1>
           <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">Non-Indigenes for Philip Aduda Movement</p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 sm:text-lg">
-            The support movement for Sen. Philip Aduda — uniting residents across the Federal Capital Territory, sharing his record of
-            service and carrying his message to every community.
+            A digital community for information, public records, community participation and civic engagement across the Federal Capital
+            Territory.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
@@ -82,7 +104,7 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline-light">
-              <Link to="/philip-aduda">Meet Sen. Philip Aduda</Link>
+              <Link to="/philip-aduda">Meet Senator Aduda</Link>
             </Button>
           </div>
           <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-white/15 pt-6">
@@ -154,7 +176,48 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Meet Sen. Philip Aduda */}
+      {/* Explore the public record */}
+      <section className="pb-16" aria-labelledby="explore-heading">
+        <div className="container">
+          <h2 id="explore-heading" className="sr-only">Explore</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              [Gavel, "Legislative Record", data ? `${data.legislation_count} bills, each shown at its documented stage.` : "Bills, each shown at its documented stage.", "/legislation"],
+              [Landmark, "Constituency Projects", "Roads, halls, classrooms and health centres reported across the FCT.", "/our-record"],
+              [GraduationCap, "Education & Scholarships", "Classroom projects and the 2018/2019 scholarship round.", "/our-record?category=education"],
+              [HeartPulse, "Health & Community Development", "Primary health centres, water projects and community halls.", "/our-record?category=healthcare"],
+              [MapPinned, "Six Area Councils", "AMAC, Bwari, Gwagwalada, Kuje, Kwali and Abaji.", "/area-councils"],
+              [
+                Vote,
+                "2027 Election Information",
+                data?.election
+                  ? `${data.election.candidate} · ${data.election.party} · ${data.election.election_date ? formatDate(data.election.election_date, { day: "numeric", month: "long", year: "numeric" }) : ""}`
+                  : "INEC's final list and the election date.",
+                "/elections",
+              ],
+            ].map(([Icon, title, text, to]) => {
+              const I = Icon as typeof Gavel;
+              return (
+                <Link
+                  key={title as string}
+                  to={to as string}
+                  className="group flex gap-4 rounded-2xl border border-border bg-white p-5 shadow-card transition hover:-translate-y-0.5 hover:border-green-500 hover:shadow-lift"
+                >
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-navy text-white transition group-hover:bg-green-600">
+                    <I className="size-5" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-bold text-navy">{title as string}</span>
+                    <span className="mt-0.5 block text-sm text-muted-foreground">{text as string}</span>
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Meet Senator Aduda */}
       <section className="section bg-surface" aria-labelledby="aduda-heading">
         <div className="container grid items-center gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
           <div className="mx-auto w-full max-w-sm">
@@ -163,23 +226,36 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <p className="eyebrow mb-3">The man we support</p>
+            <p className="eyebrow mb-3">Profile</p>
             <h2 id="aduda-heading" className="text-3xl font-extrabold sm:text-4xl lg:text-5xl">
-              Meet {data?.profile.name ?? "Sen. Philip Aduda"}
+              {data?.profile.name ?? "Senator Philip Tanimu Aduda"}
             </h2>
-            {data?.profile.title && <p className="mt-3 text-lg font-semibold text-green-600">{data.profile.title}</p>}
-            {data?.profile.tagline && (
-              <p className="mt-5 border-l-4 border-green-500 pl-4 font-display text-xl font-semibold leading-snug text-navy">{data.profile.tagline}</p>
+            {data?.profile.badges?.length ? (
+              <ul className="mt-4 flex flex-col gap-2">
+                {data.profile.badges.map((b) => (
+                  <li key={b.label} className="flex flex-wrap items-center gap-2">
+                    <span className="text-lg font-semibold text-green-700">{b.label}</span>
+                    <VerificationBadge status={b.verification} />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              data?.profile.title && <p className="mt-3 text-lg font-semibold text-green-600">{data.profile.title}</p>
             )}
             <p className="mt-5 text-lg leading-relaxed text-muted-foreground">{data?.profile.summary}</p>
+            {data && data.profile.metrics?.length > 0 && (
+              <div className="mt-6">
+                <SelfReportedMetrics p={data.profile} />
+              </div>
+            )}
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg" variant="navy">
                 <Link to="/philip-aduda">
-                  Read his story <ArrowRight />
+                  Full profile <ArrowRight />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/our-record">See his record</Link>
+                <Link to="/our-record">See the public record</Link>
               </Button>
             </div>
           </div>
@@ -270,8 +346,8 @@ export default function Home() {
         <div className="container">
           <SectionHeading
             eyebrow="Our Record"
-            title={<span id="record-heading">His record of service</span>}
-            description="A searchable library of Sen. Philip Aduda's documented projects and public activities, each with its sources and verification status."
+            title={<span id="record-heading">The public record</span>}
+            description="Constituency projects, legislation and election records, each with its source, verification status and last-updated date."
             action={
               <Button asChild variant="outline">
                 <Link to="/our-record">
@@ -282,9 +358,9 @@ export default function Home() {
           />
           <div className="mb-10 grid gap-4 sm:grid-cols-3">
             {[
-              [FileSearch, "Source-cited", "Records reference who published the information and when."],
-              [ShieldCheck, "Clearly labelled", "Verified, pending review, unverified or disputed — always visible."],
-              [Sparkles, "Sample content marked", "Demonstration entries are labelled until verified data is added."],
+              [FileSearch, "Source-cited", "Every record links to who published the information."],
+              [ShieldCheck, "Clearly labelled", "Verified, reported, self-reported or pending — always visible."],
+              [BookOpenCheck, "Nothing upgraded", "“Ongoing” stays ongoing; a bill is never shown as law without an official record."],
             ].map(([Icon, t, d]) => {
               const I = Icon as typeof FileSearch;
               return (

@@ -106,17 +106,19 @@ await check("Logout and log back in", async () => {
   await m.getByRole("heading", { name: /Welcome, Chidinma/ }).waitFor();
 }, m);
 
-await check("Sen. Philip Aduda profile page", async () => {
+await check("Senator profile page — sourced facts and self-reported figures", async () => {
   await m.goto(`${BASE}/philip-aduda`);
-  await m.getByRole("heading", { level: 1, name: "Sen. Philip Aduda" }).waitFor();
-  await m.getByRole("link", { name: "See his record" }).first().waitFor();
+  await m.getByRole("heading", { level: 1, name: "Senator Philip Tanimu Aduda, CON" }).waitFor();
+  await m.getByText("Former FCT Senator (2011–2023)").first().waitFor();
+  await m.getByText("Self-reported figures published by Senator Aduda's official platform.").waitFor();
+  await m.getByText("Diploma in Social Work").first().waitFor();
 }, m);
 
 await check("Area Council page tabs", async () => {
   await m.goto(`${BASE}/area-councils/kuje`);
   await m.getByRole("heading", { name: "Kuje Area Council" }).waitFor();
   await m.getByRole("tab", { name: /Projects\/Records/ }).click();
-  await m.getByText("[Sample] Community Health Centre Record").waitFor();
+  await m.getByText("Shadadi Road").first().waitFor();
 }, m);
 
 await check("Our Record — filter, list view and detail", async () => {
@@ -126,15 +128,34 @@ await check("Our Record — filter, list view and detail", async () => {
   await m.getByText(/^\d+ records?/).waitFor();
   await m.waitForURL(/category=roads/);
   await m.getByRole("button", { name: "list view" }).click();
-  await m.getByRole("link", { name: /Rural Road Access/ }).click();
+  await m.getByLabel("Search records").fill("Global Suite");
+  await m.getByRole("link", { name: "Global Suite Road, Sabon Gari" }).click();
   await m.getByRole("heading", { name: "Sources & references" }).waitFor();
-  await m.getByText("[SOURCE TO BE ADDED]").waitFor();
+  await m.getByText("Reported length").first().waitFor();
+  await m.getByText("Last updated").first().waitFor();
+}, m);
+
+await check("Legislation — stage filter and detail", async () => {
+  await m.goto(`${BASE}/legislation`);
+  await m.locator('select[aria-label="Legislative stage"]').selectOption("second_reading");
+  await m.waitForURL(/stage=second_reading/);
+  await m.getByRole("link", { name: "FCT Area Councils Administrative & Political Structure Bill" }).click();
+  await m.getByText("Second reading documented by the National Assembly.").waitFor();
+  await m.getByText("This record is not shown as law.", { exact: false }).waitFor();
+}, m);
+
+await check("Elections — INEC 2027 record", async () => {
+  await m.goto(`${BASE}/elections`);
+  await m.getByText("2027 FCT Senatorial Election").waitFor();
+  await m.getByText("2019 FCT Senatorial Election").waitFor();
+  await m.getByText("2023 FCT Senatorial Election").waitFor();
 }, m);
 
 await check("News list and article", async () => {
   await m.goto(`${BASE}/news`);
-  await m.getByRole("link", { name: "Welcome to the NIPAM community platform" }).first().click();
+  await m.getByRole("link", { name: "Who Is Senator Philip Tanimu Aduda?" }).first().click();
   await m.getByText("Published by").waitFor();
+  await m.getByRole("heading", { name: "Sources" }).waitFor();
 }, m);
 
 let eventUrl;
@@ -183,7 +204,9 @@ await check("Settings — notification preferences", async () => {
 
 await check("Global search", async () => {
   await m.goto(`${BASE}/search?q=kuje`);
-  await m.getByRole("heading", { name: /Area Councils/ }).waitFor();
+  await m.getByRole("heading", { name: /^Area Councils/ }).first().waitFor();
+  await m.goto(`${BASE}/search?q=Water%20Board`);
+  await m.getByRole("link", { name: "FCT Water Board Bill" }).first().waitFor();
 }, m);
 
 // A second member reports the discussion so the admin can moderate it.
@@ -228,9 +251,9 @@ await check("Admin — members search and detail", async () => {
   await a.keyboard.press("Escape");
 }, a);
 
-await check("Admin — edit Sen. Aduda profile", async () => {
-  await a.getByRole("link", { name: "Sen. Aduda profile" }).click();
-  await a.getByLabel("Title / position").fill("E2E title");
+await check("Admin — save the Senator profile (facts, badges, figures)", async () => {
+  await a.getByRole("link", { name: "Senator profile" }).click();
+  await a.getByLabel("Label shown with the figures").waitFor();
   await a.getByRole("button", { name: "Save & publish" }).click();
   await a.getByText("Profile published").waitFor();
 }, a);
@@ -246,8 +269,8 @@ await check("Admin — language filter word list", async () => {
 }, a);
 
 await check("Admin — create, source and publish a record", async () => {
-  await a.getByRole("link", { name: "Our Record" }).click();
-  await a.getByRole("link", { name: "New record" }).click();
+  await a.getByRole("link", { name: "Projects" }).click();
+  await a.getByRole("link", { name: "New project" }).click();
   await a.getByLabel("Project / action title").fill("E2E test record");
   await a.getByLabel("Short description").fill("Created by the end-to-end test.");
   await a.getByRole("button", { name: "Add source" }).click();
@@ -256,6 +279,19 @@ await check("Admin — create, source and publish a record", async () => {
   await a.getByRole("button", { name: "Save" }).click();
   await a.getByRole("button", { name: "Publish" }).click();
   await a.getByText("Record published").waitFor();
+}, a);
+
+await check("Admin — add a legislative record citing the registry", async () => {
+  await a.getByRole("link", { name: "Legislation" }).click();
+  await a.getByRole("link", { name: "New legislative record" }).click();
+  await a.getByLabel("Title").fill("E2E test bill");
+  await a.getByLabel("Category").fill("Governance");
+  await a.locator("#l-stage").selectOption("introduced");
+  await a.locator('select[aria-label="Add a source from the registry"]').selectOption({ index: 1 });
+  await a.getByRole("button", { name: "Save" }).click();
+  await a.getByText("Legislative record saved").waitFor();
+  await a.getByRole("button", { name: "Publish" }).click();
+  await a.getByText("Published").first().waitFor();
 }, a);
 
 await check("Admin — draft and publish news", async () => {

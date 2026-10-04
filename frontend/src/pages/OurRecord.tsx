@@ -14,11 +14,12 @@ import { CardSkeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMeta } from "@/hooks/useMeta";
 import { api, type Paged } from "@/lib/api";
-import { VERIFICATION } from "@/lib/constants";
+import { PROJECT_STATUS, VERIFICATION } from "@/lib/constants";
+import { RecordTabs } from "@/components/shared/SourceLine";
 import type { RecordCard as RecordCardT, VerificationStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const FILTERS = ["area_council", "category", "year", "verification", "sort"] as const;
+const FILTERS = ["area_council", "category", "project_status", "verification", "year", "sort"] as const;
 
 export default function OurRecord() {
   const [params, setParams] = useSearchParams();
@@ -88,14 +89,14 @@ export default function OurRecord() {
           <option key={c.slug} value={c.slug}>{c.name}</option>
         ))}
       </Select>
-      <Select aria-label="Year" value={params.get("year") ?? ""} onChange={(e) => set("year", e.target.value)}>
-        <option value="">Any year</option>
-        {meta.data?.record_years.map((y) => (
-          <option key={y} value={y}>{y}</option>
+      <Select aria-label="Project status" value={params.get("project_status") ?? ""} onChange={(e) => set("project_status", e.target.value)}>
+        <option value="">Any project status</option>
+        {Object.entries(PROJECT_STATUS).map(([k, v]) => (
+          <option key={k} value={k}>{v.label}</option>
         ))}
       </Select>
       <Select aria-label="Verification status" value={params.get("verification") ?? ""} onChange={(e) => set("verification", e.target.value)}>
-        <option value="">Any status</option>
+        <option value="">Any verification</option>
         {Object.entries(VERIFICATION).map(([k, v]) => (
           <option key={k} value={k}>{v.label}</option>
         ))}
@@ -105,14 +106,15 @@ export default function OurRecord() {
 
   return (
     <>
-      <Seo title="Our Record" description="Sen. Philip Aduda's record: a searchable library of documented projects and activities across the FCT, with sources." />
+      <Seo title="Our Record — Constituency projects" description="Constituency projects reported across the six FCT Area Councils during Senator Philip Tanimu Aduda's representation, each with its source and verification status." />
       <PageHeader
         eyebrow="Our Record"
-        title="Sen. Philip Aduda's record"
-        description="Documented projects and public activities across the FCT. Every record shows its sources and verification status, so supporters can share it with confidence."
+        title="Constituency projects"
+        description="Projects reported as facilitated or attracted during Senator Aduda's representation, across the six Area Councils. Each record keeps its source's own wording on status, cost and length — nothing is upgraded."
         crumbs={[{ to: "/", label: "Home" }, { label: "Our Record" }]}
       >
-        <div className="mt-8 flex flex-wrap gap-2">
+        <RecordTabs />
+        <div className="mt-6 flex flex-wrap gap-2">
           {(Object.keys(VERIFICATION) as VerificationStatus[]).map((s) => (
             <VerificationBadge key={s} status={s} className="bg-white" />
           ))}
@@ -124,13 +126,13 @@ export default function OurRecord() {
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search records by title, place or keyword" className="pl-10" aria-label="Search records" type="search" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search projects by title, place or keyword" className="pl-10" aria-label="Search records" type="search" />
             </div>
             <Button variant="outline" className="lg:hidden" onClick={() => setShowFilters((s) => !s)} aria-expanded={showFilters}>
               <SlidersHorizontal /> <span className="sr-only sm:not-sr-only">Filters</span>
               {activeCount > 0 && <span className="rounded-full bg-green-600 px-1.5 text-[11px] text-white">{activeCount}</span>}
             </Button>
-            <div className="hidden gap-2 lg:grid lg:w-[46rem] lg:grid-cols-4">{filterControls}</div>
+            <div className="hidden gap-2 lg:grid lg:w-[48rem] lg:grid-cols-4">{filterControls}</div>
           </div>
           {showFilters && <div className="mt-3 grid grid-cols-2 gap-2 lg:hidden">{filterControls}</div>}
         </div>
