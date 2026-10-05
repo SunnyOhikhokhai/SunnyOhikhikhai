@@ -24,12 +24,14 @@ def alembic_config() -> Config:
     return cfg
 
 
-def untracked_revision(tables: set[str]) -> str | None:
+def untracked_revision(tables: set[str], preference_columns: set[str] = frozenset()) -> str | None:
     """The revision an untracked database's tables correspond to."""
     if "alembic_version" in tables or "users" not in tables:
         return None
+    if "whatsapp_events" in preference_columns:
+        return "1889870066a0"
     if "sources" in tables:
-        return "head"
+        return "c244e77c88be"
     if "principal_profile" in tables:
         return "9a9061abd072"
     return "d144d266f88a"
@@ -37,7 +39,10 @@ def untracked_revision(tables: set[str]) -> str | None:
 
 def migrate() -> None:
     cfg = alembic_config()
-    base = untracked_revision(set(inspect(engine).get_table_names()))
+    insp = inspect(engine)
+    tables = set(insp.get_table_names())
+    columns = {c["name"] for c in insp.get_columns("notification_preferences")} if "notification_preferences" in tables else set()
+    base = untracked_revision(tables, columns)
     if base:
         print(f"Database has no migration history; marking it as {base} before upgrading.")
         command.stamp(cfg, base)

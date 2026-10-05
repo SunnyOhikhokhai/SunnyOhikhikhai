@@ -129,6 +129,8 @@ def preferences(p) -> dict:
         "email_community",
         "sms_announcements",
         "sms_events",
+        "whatsapp_announcements",
+        "whatsapp_events",
     ]
     return {f: getattr(p, f) for f in fields}
 

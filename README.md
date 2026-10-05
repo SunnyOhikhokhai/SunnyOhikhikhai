@@ -102,6 +102,7 @@ This starts PostgreSQL, the API (runs migrations and seeds reference data on sta
 
 Production notes:
 - **Email:** `NIPAM_EMAIL_PROVIDER=smtp` works with any SMTP transactional provider.
+- **WhatsApp:** members can opt in to WhatsApp messages for announcements and events (off by default; needs a verified phone number). To switch it on, create a WhatsApp Business account in Meta Business Manager, get an approved message template (default name `nipam_update`) whose body has one `{{1}}` variable, for example "NIPAM update: {{1}}", then set `NIPAM_WHATSAPP_PROVIDER=cloud`, `NIPAM_WHATSAPP_TOKEN` and `NIPAM_WHATSAPP_PHONE_NUMBER_ID`. Use `NIPAM_WHATSAPP_PROVIDER=console` to test without sending.
 - **SMS:** `backend/app/services/sms.py` is an abstraction. Set `NIPAM_SMS_PROVIDER=http` for a generic JSON gateway, or add a `SmsProvider` subclass for an approved Nigerian SMS provider.
 - **File storage:** `NIPAM_STORAGE_BACKEND=s3` for S3-compatible object storage. It requires `boto3`.
 - **Rate limiting** is per process. With several instances, back `security.RateLimiter` with Redis.

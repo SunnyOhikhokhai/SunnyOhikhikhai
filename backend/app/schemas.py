@@ -149,6 +149,8 @@ class PreferencesIn(Clean):
     email_community: bool | None = None
     sms_announcements: bool | None = None
     sms_events: bool | None = None
+    whatsapp_announcements: bool | None = None
+    whatsapp_events: bool | None = None
 
 
 # --- Community ---------------------------------------------------------------

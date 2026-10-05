@@ -214,6 +214,9 @@ class NotificationPreference(TimestampMixin, Base):
     email_community: Mapped[bool] = mapped_column(Boolean, default=False)
     sms_announcements: Mapped[bool] = mapped_column(Boolean, default=False)
     sms_events: Mapped[bool] = mapped_column(Boolean, default=False)
+    # WhatsApp is opt-in only: members must switch it on themselves.
+    whatsapp_announcements: Mapped[bool] = mapped_column(Boolean, default=False)
+    whatsapp_events: Mapped[bool] = mapped_column(Boolean, default=False)
 
     user: Mapped[User] = relationship(back_populates="preferences")
 
