@@ -256,7 +256,9 @@ export default function Settings() {
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const tab = params.get("tab") ?? "profile";
-  useEffect(() => window.scrollTo({ top: 0 }), [tab]);
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [tab]);
   if (!user) return null;
   return (
     <>

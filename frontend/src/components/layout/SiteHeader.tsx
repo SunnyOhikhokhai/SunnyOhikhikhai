@@ -96,7 +96,9 @@ export function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
-  useEffect(() => setMenuOpen(false), [location.pathname]);
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
