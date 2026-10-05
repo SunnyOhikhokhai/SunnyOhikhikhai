@@ -9,6 +9,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import App from "./App";
+import { ErrorBoundary } from "./components/layout/ErrorBoundary";
 import { ConfirmProvider } from "./components/ui/confirm";
 import { AuthProvider } from "./hooks/useAuth";
 import { ApiError } from "./lib/api";
@@ -30,7 +31,9 @@ createRoot(document.getElementById("root")!).render(
         <BrowserRouter>
           <AuthProvider>
             <ConfirmProvider>
-              <App />
+              <ErrorBoundary>
+                <App />
+              </ErrorBoundary>
               <Toaster position="top-center" richColors closeButton toastOptions={{ className: "font-sans" }} />
             </ConfirmProvider>
           </AuthProvider>
