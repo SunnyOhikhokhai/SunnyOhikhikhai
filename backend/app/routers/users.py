@@ -74,12 +74,17 @@ def update_me(body: ProfileUpdateIn, request: Request, user: User = Depends(get_
     return ok(ser.me(user))
 
 
+def _preferences_out(user: User) -> dict:
+    s = get_settings()
+    return {**ser.preferences(user.preferences), "sms_enabled": s.sms_enabled, "whatsapp_enabled": s.whatsapp_enabled}
+
+
 @router.get("/me/preferences")
 def get_preferences(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not user.preferences:
         user.preferences = NotificationPreference()
         db.commit()
-    return ok({**ser.preferences(user.preferences), "sms_enabled": get_settings().sms_enabled})
+    return ok(_preferences_out(user))
 
 
 @router.put("/me/preferences", dependencies=[Depends(csrf_protect)])
@@ -87,11 +92,13 @@ def put_preferences(body: PreferencesIn, request: Request, user: User = Depends(
     if not user.preferences:
         user.preferences = NotificationPreference()
     changes = body.model_dump(exclude_none=True)
+    if any(v for k, v in changes.items() if k.startswith("whatsapp_")) and not user.phone_verified_at:
+        raise ApiError(422, "phone_unverified", "Verify your phone number before turning on WhatsApp messages.")
     for k, v in changes.items():
         setattr(user.preferences, k, v)
     audit(db, user.id, "member.preferences_updated", "user", user.id, request, changes=changes)
     db.commit()
-    return ok({**ser.preferences(user.preferences), "sms_enabled": get_settings().sms_enabled})
+    return ok(_preferences_out(user))
 
 
 @router.post("/me/password", dependencies=[Depends(csrf_protect)])

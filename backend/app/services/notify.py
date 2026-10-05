@@ -1,4 +1,4 @@
-"""Fan-out of in-app, email and SMS notifications, respecting each member's
+"""Fan-out of in-app, email, SMS and WhatsApp notifications, respecting each member's
 preferences. Account/security messages are essential and bypass preferences."""
 
 from __future__ import annotations
@@ -12,13 +12,15 @@ from sqlalchemy.orm import Session, selectinload
 from ..models import MemberAreaCouncil, Notification, NotificationPreference, User
 from .email import send_email
 from .sms import send_sms
+from .whatsapp import send_whatsapp
 
+# (in-app, email, SMS, WhatsApp) preference for each notification type
 PREF_FIELDS = {
-    "announcement": ("in_app_announcements", "email_announcements", "sms_announcements"),
-    "event": ("in_app_events", "email_events", "sms_events"),
-    "community": ("in_app_community", "email_community", None),
-    "council_update": ("in_app_council_updates", None, None),
-    "account": (None, None, None),
+    "announcement": ("in_app_announcements", "email_announcements", "sms_announcements", "whatsapp_announcements"),
+    "event": ("in_app_events", "email_events", "sms_events", "whatsapp_events"),
+    "community": ("in_app_community", "email_community", None, None),
+    "council_update": ("in_app_council_updates", None, None, None),
+    "account": (None, None, None, None),
 }
 
 
@@ -26,6 +28,7 @@ PREF_FIELDS = {
 class Outbound:
     emails: list[tuple[str, str, str]] = field(default_factory=list)
     sms: list[tuple[str, str]] = field(default_factory=list)
+    whatsapp: list[tuple[str, str]] = field(default_factory=list)
 
     def schedule(self, tasks: BackgroundTasks | None) -> None:
         for to, subject, text in self.emails:
@@ -38,6 +41,11 @@ class Outbound:
                 tasks.add_task(send_sms, to, text)
             else:
                 send_sms(to, text)
+        for to, text in self.whatsapp:
+            if tasks:
+                tasks.add_task(send_whatsapp, to, text)
+            else:
+                send_whatsapp(to, text)
 
 
 def _wants(prefs: NotificationPreference | None, attr: str | None) -> bool:
@@ -55,7 +63,7 @@ def notify_users(
     link: str | None = None,
     tasks: BackgroundTasks | None = None,
 ) -> int:
-    in_app_attr, email_attr, sms_attr = PREF_FIELDS[ntype]
+    in_app_attr, email_attr, sms_attr, whatsapp_attr = PREF_FIELDS[ntype]
     out = Outbound()
     count = 0
     for u in users:
@@ -67,6 +75,9 @@ def notify_users(
             out.emails.append((u.email, f"NIPAM: {title}", f"{body}\n\nManage your notification preferences in your NIPAM account settings."))
         if _wants(prefs, sms_attr) and u.phone and u.phone_verified_at:
             out.sms.append((u.phone, f"NIPAM: {title}"[:300]))
+        if _wants(prefs, whatsapp_attr) and u.phone and u.phone_verified_at:
+            text = f"{title}\n\n{body}" if body else title
+            out.whatsapp.append((u.phone, text[:900]))
     db.commit()
     out.schedule(tasks)
     return count

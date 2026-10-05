@@ -391,7 +391,7 @@ def admin_update_preferences(
         raise not_found("Member")
     changed = {}
     for k, v in body.items():
-        if hasattr(u.preferences, k) and k.startswith(("email_", "sms_", "in_app_")) and v is False:
+        if hasattr(u.preferences, k) and k.startswith(("email_", "sms_", "whatsapp_", "in_app_")) and v is False:
             setattr(u.preferences, k, False)
             changed[k] = False
     audit(db, ctx.user.id, "member.preferences_opt_out", "user", u.id, request, changes=changed)

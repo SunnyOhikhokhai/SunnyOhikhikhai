@@ -275,7 +275,10 @@ export interface Preferences {
   email_community: boolean;
   sms_announcements: boolean;
   sms_events: boolean;
+  whatsapp_announcements: boolean;
+  whatsapp_events: boolean;
   sms_enabled: boolean;
+  whatsapp_enabled: boolean;
 }
 
 export interface Meta {

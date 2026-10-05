@@ -127,8 +127,8 @@ function VerifyRow({ channel, user }: { channel: "email" | "sms"; user: Me }) {
 }
 
 const PREF_ROWS: { title: string; description: string; keys: [keyof Preferences, string][] }[] = [
-  { title: "Platform announcements", description: "Official NIPAM announcements for the FCT and your Area Council.", keys: [["in_app_announcements", "In-app"], ["email_announcements", "Email"], ["sms_announcements", "SMS"]] },
-  { title: "Events", description: "New events and changes to events you've registered for.", keys: [["in_app_events", "In-app"], ["email_events", "Email"], ["sms_events", "SMS"]] },
+  { title: "Platform announcements", description: "Official NIPAM announcements for the FCT and your Area Council.", keys: [["in_app_announcements", "In-app"], ["email_announcements", "Email"], ["sms_announcements", "SMS"], ["whatsapp_announcements", "WhatsApp"]] },
+  { title: "Events", description: "New events and changes to events you've registered for.", keys: [["in_app_events", "In-app"], ["email_events", "Email"], ["sms_events", "SMS"], ["whatsapp_events", "WhatsApp"]] },
   { title: "Community updates", description: "Replies to your discussions and comments.", keys: [["in_app_community", "In-app"], ["email_community", "Email"]] },
   { title: "Area Council updates", description: "News published for your Area Council.", keys: [["in_app_council_updates", "In-app"]] },
 ];
@@ -152,9 +152,11 @@ function NotificationsTab({ user }: { user: Me }) {
               <p className="font-semibold text-navy">{row.title}</p>
               <p className="text-sm text-muted-foreground">{row.description}</p>
             </div>
-            <div className="flex gap-5">
+            <div className="flex flex-wrap gap-5">
               {row.keys.map(([key, label]) => {
-                const smsBlocked = key.startsWith("sms_") && (!data.sms_enabled || !user.phone_verified);
+                const smsBlocked =
+                  (key.startsWith("sms_") && (!data.sms_enabled || !user.phone_verified)) ||
+                  (key.startsWith("whatsapp_") && (!data.whatsapp_enabled || !user.phone_verified));
                 const emailBlocked = key.startsWith("email_") && !user.email_verified;
                 const id = `pref-${key}`;
                 return (
@@ -169,7 +171,10 @@ function NotificationsTab({ user }: { user: Me }) {
         ))}
       </div>
       <p className="mt-6 rounded-xl bg-surface p-4 text-xs text-muted-foreground">
-        {!data.sms_enabled ? "SMS delivery will be enabled once NIPAM connects an approved SMS provider. " : !user.phone_verified ? "Verify your phone number to enable SMS. " : ""}
+        {!data.sms_enabled ? "SMS delivery will be enabled once NIPAM connects an approved SMS provider. " : ""}
+        {!data.whatsapp_enabled ? "WhatsApp messages will be enabled once NIPAM connects its WhatsApp Business account. " : ""}
+        {!user.phone_verified && (data.sms_enabled || data.whatsapp_enabled) ? "Verify your phone number to receive SMS or WhatsApp messages. " : ""}
+        WhatsApp messages are only sent if you switch them on.
         Email options require a verified email address. We never share your contact details.
       </p>
     </Section>

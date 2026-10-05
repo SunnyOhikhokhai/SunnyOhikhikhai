@@ -41,6 +41,15 @@ class Settings(BaseSettings):
     sms_http_url: str = ""
     sms_http_token: str = ""
     sms_sender_id: str = "NIPAM"
+    # WhatsApp: none | console | cloud (Meta WhatsApp Business Cloud API).
+    # Messages to members are sent with an approved template whose body has a
+    # single {{1}} parameter, which receives the notification text.
+    whatsapp_provider: str = "none"
+    whatsapp_token: str = ""
+    whatsapp_phone_number_id: str = ""
+    whatsapp_template: str = "nipam_update"
+    whatsapp_template_language: str = "en"
+    whatsapp_api_version: str = "v21.0"
 
     # Storage
     storage_backend: str = "local"  # local | s3
@@ -66,6 +75,10 @@ class Settings(BaseSettings):
     @property
     def sms_enabled(self) -> bool:
         return self.sms_provider not in ("", "none")
+
+    @property
+    def whatsapp_enabled(self) -> bool:
+        return self.whatsapp_provider not in ("", "none")
 
 
 @lru_cache
