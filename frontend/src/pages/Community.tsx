@@ -26,7 +26,9 @@ function NewDiscussion({ open, onOpenChange, defaultCouncil }: { open: boolean; 
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: "", body: "", category: "general-discussion", area_council: defaultCouncil ?? "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  useEffect(() => setForm((f) => ({ ...f, area_council: defaultCouncil ?? f.area_council })), [defaultCouncil]);
+  useEffect(() => {
+    setForm((f) => ({ ...f, area_council: defaultCouncil ?? f.area_council }));
+  }, [defaultCouncil]);
   const m = useMutation({
     mutationFn: () => api.post<{ data: DiscussionItem & { held_for_review: boolean } }>("/api/discussions", { ...form, area_council: form.area_council || null }),
     onSuccess: (res) => {
