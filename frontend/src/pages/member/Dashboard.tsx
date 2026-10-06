@@ -60,7 +60,7 @@ export default function Dashboard() {
           <h1 className="mt-1 text-3xl font-extrabold text-white sm:text-4xl">
             Welcome, {data ? data.user.first_name : <Skeleton className="inline-block h-8 w-32 bg-white/10 align-middle" />}
           </h1>
-          <p className="mt-2 text-navy-100">Here's what's happening across NIPAM and your Area Council.</p>
+          <p className="mt-2 text-navy-100">Here's what's happening across NIMPA and your Area Council.</p>
         </div>
       </div>
       <div className="container -mt-16 space-y-6">

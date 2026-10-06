@@ -15,8 +15,8 @@ from .sms import send_sms
 PURPOSE_TEXT = {
     "verify_email": "verify your email address",
     "verify_phone": "verify your phone number",
-    "login": "log in to NIPAM",
-    "reset_password": "reset your NIPAM password",
+    "login": "log in to NIMPA",
+    "reset_password": "reset your NIMPA password",
 }
 
 
@@ -48,13 +48,13 @@ def issue_code(db: Session, user: User, purpose: str, channel: str) -> str:
     )
     db.commit()
     text = (
-        f"Your NIPAM code to {PURPOSE_TEXT.get(purpose, purpose)} is {code}. "
+        f"Your NIMPA code to {PURPOSE_TEXT.get(purpose, purpose)} is {code}. "
         f"It expires in {s.otp_ttl_minutes} minutes. Never share this code with anyone."
     )
     if channel == "sms":
         send_sms(user.phone, text)
     else:
-        send_email(user.email, "Your NIPAM verification code", f"Hello {user.first_name},\n\n{text}\n\n— NIPAM")
+        send_email(user.email, "Your NIMPA verification code", f"Hello {user.first_name},\n\n{text}\n\n— NIMPA")
     return code
 
 

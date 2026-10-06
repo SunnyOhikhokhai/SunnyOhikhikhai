@@ -109,7 +109,7 @@ export default function Aduda() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
                 <Link to={user ? "/community" : "/join"}>
-                  {user ? "Join the conversation" : "Join NIPAM"} <ArrowRight />
+                  {user ? "Join the conversation" : "Join NIMPA"} <ArrowRight />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline-light">
@@ -201,7 +201,7 @@ export default function Aduda() {
                 ["/elections", "Election records", Vote],
                 ["/news", "News and explainers", Newspaper],
                 ["/events", "Upcoming events", CalendarDays],
-                ["/about", "About NIPAM", BookOpenCheck],
+                ["/about", "About NIMPA", BookOpenCheck],
               ].map(([to, label, Icon]) => {
                 const I = Icon as typeof FileText;
                 return (

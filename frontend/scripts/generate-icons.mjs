@@ -36,8 +36,8 @@ const og = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
   <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#063B66"/><stop offset="1" stop-color="#04243F"/></linearGradient></defs>
   <rect width="1200" height="630" fill="url(#g)"/>
   <rect x="0" y="600" width="1200" height="30" fill="#079447"/>
-  <text x="400" y="300" font-family="DejaVu Sans, Arial, sans-serif" font-size="120" font-weight="800" fill="#FFFFFF" letter-spacing="8">NIPAM</text>
-  <text x="404" y="370" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" fill="#CDEFDB">Non-Indigenes for Philip Aduda Movement</text>
+  <text x="400" y="300" font-family="DejaVu Sans, Arial, sans-serif" font-size="120" font-weight="800" fill="#FFFFFF" letter-spacing="8">NIMPA</text>
+  <text x="404" y="370" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" fill="#CDEFDB">Non-Indigenes Movement for Philip Aduda</text>
   <text x="404" y="430" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" fill="#D5D9DD">Community · Information · Participation — FCT, Nigeria</text>
 </svg>`;
 const emblem = await png(onDark, 260).toBuffer();

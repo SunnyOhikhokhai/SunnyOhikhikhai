@@ -122,7 +122,7 @@ def find_user(db: Session, identifier: str) -> User | None:
 
 def _ensure_can_login(user: User) -> None:
     if user.status != "active":
-        raise ApiError(403, "account_suspended", "This account has been suspended. Contact NIPAM support for help.")
+        raise ApiError(403, "account_suspended", "This account has been suspended. Contact NIMPA support for help.")
 
 
 @router.get("/csrf")
@@ -184,7 +184,7 @@ def register(body: RegisterIn, request: Request, response: Response, db: Session
         db,
         [user],
         "account",
-        "Welcome to NIPAM",
+        "Welcome to NIMPA",
         f"Your account has been created and linked to {council.name}. Verify your email to take part in the community.",
         "/dashboard",
     )
@@ -330,5 +330,5 @@ def reset_password(body: ResetPasswordIn, request: Request, db: Session = Depend
     revoke_all_sessions(db, user.id)
     audit(db, user.id, "auth.password_reset", "user", user.id, request)
     db.commit()
-    notify_users(db, [user], "account", "Your password was changed", "If this wasn't you, contact NIPAM support immediately.")
+    notify_users(db, [user], "account", "Your password was changed", "If this wasn't you, contact NIMPA support immediately.")
     return ok({"reset": True})

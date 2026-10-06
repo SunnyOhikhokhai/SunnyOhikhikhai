@@ -3,7 +3,7 @@
 NIPAM_WHATSAPP_PROVIDER=cloud sends through the Meta WhatsApp Business Cloud
 API. WhatsApp only allows a business to start a conversation with an approved
 message template, so create a template (default name ``nipam_update``) whose
-body contains one ``{{1}}`` variable, e.g. "NIPAM update: {{1}}", and set
+body contains one ``{{1}}`` variable, e.g. "NIMPA update: {{1}}", and set
 NIPAM_WHATSAPP_TOKEN and NIPAM_WHATSAPP_PHONE_NUMBER_ID. Members receive
 WhatsApp messages only if they switched the channel on and verified their phone.
 """

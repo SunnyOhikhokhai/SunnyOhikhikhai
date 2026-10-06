@@ -46,7 +46,7 @@ export function PwaPrompts() {
     return (
       <div role="status" className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl bg-navy p-4 text-white shadow-lift sm:bottom-6">
         <RefreshCw className="size-5 shrink-0 text-green-300" />
-        <p className="flex-1 text-sm">A new version of NIPAM is available.</p>
+        <p className="flex-1 text-sm">A new version of NIMPA is available.</p>
         <Button size="sm" onClick={() => updateServiceWorker(true)}>
           Update
         </Button>
@@ -58,10 +58,10 @@ export function PwaPrompts() {
 
   if (!showInstall || !deferred) return null;
   return (
-    <div role="dialog" aria-label="Install NIPAM" className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-lift animate-fade-up sm:bottom-6">
+    <div role="dialog" aria-label="Install NIMPA" className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-border bg-white p-4 shadow-lift animate-fade-up sm:bottom-6">
       <LogoMark className="size-11" />
       <div className="flex-1">
-        <p className="text-sm font-bold text-navy">Install the NIPAM app</p>
+        <p className="text-sm font-bold text-navy">Install the NIMPA app</p>
         <p className="text-xs text-muted-foreground">Quick access from your home screen, even with a weak connection.</p>
       </div>
       <Button size="sm" onClick={install}>

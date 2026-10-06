@@ -26,7 +26,7 @@ function downloadIcs(e: EventItem) {
   const ics = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//NIPAM//Events//EN",
+    "PRODID:-//NIMPA//Events//EN",
     "BEGIN:VEVENT",
     `UID:nipam-event-${e.id}@nipam`,
     `DTSTAMP:${fmt(new Date().toISOString())}`,

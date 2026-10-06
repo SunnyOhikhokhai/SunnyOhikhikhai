@@ -26,13 +26,13 @@ export default function Contact() {
   });
   return (
     <>
-      <Seo title="Contact" description="Get in touch with the NIPAM team." />
+      <Seo title="Contact" description="Get in touch with the NIMPA team." />
       <PageHeader eyebrow="Contact" title="Get in touch" description="Questions, corrections to a record, or ideas for the community? Send us a message." crumbs={[{ to: "/", label: "Home" }, { label: "Contact" }]} />
       <div className="container grid gap-10 py-12 lg:grid-cols-[1fr_1.4fr]">
         <aside className="space-y-4">
           {[
             [MapPin, "Location", "Federal Capital Territory, Abuja, Nigeria"],
-            [Mail, "Email", "Use the form — messages go directly to the NIPAM team."],
+            [Mail, "Email", "Use the form — messages go directly to the NIMPA team."],
             [Clock, "Response time", "We aim to reply within a few working days."],
           ].map(([Icon, t, d]) => {
             const I = Icon as typeof MapPin;
@@ -56,7 +56,7 @@ export default function Contact() {
             <div className="flex flex-col items-center py-10 text-center">
               <CheckCircle2 className="size-12 text-green-600" />
               <h2 className="mt-4 text-2xl font-extrabold">Message received</h2>
-              <p className="mt-2 max-w-sm text-muted-foreground">Thank you for contacting NIPAM. A member of the team will respond by email.</p>
+              <p className="mt-2 max-w-sm text-muted-foreground">Thank you for contacting NIMPA. A member of the team will respond by email.</p>
               <Button variant="outline" className="mt-6" onClick={() => { setSent(false); setForm((f) => ({ ...f, message: "" })); }}>Send another message</Button>
             </div>
           ) : (

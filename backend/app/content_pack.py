@@ -1,4 +1,4 @@
-"""NIPAM Master Content Pack v1.0 (research date 4 October 2026).
+"""NIMPA Master Content Pack v1.0 (research date 4 October 2026).
 
 Imports the controlled content pack as structured CMS data: the profile of
 Senator Philip Tanimu Aduda, his political timeline, legislative records,
@@ -769,10 +769,10 @@ NEWS: list[dict] = [
             "4. Kuje Area Council\n"
             "5. Kwali Area Council\n"
             "6. Abaji Area Council\n\n"
-            "NIPAM uses the six councils to organise its community pages, records, news and events, so members can follow "
+            "NIMPA uses the six councils to organise its community pages, records, news and events, so members can follow "
             "what is happening where they live.\n\n"
             "Ward counts, boundaries, population figures and polling units are not shown here. They will be added only from "
-            "authoritative current sources. Choosing an Area Council on NIPAM does not indicate where anyone votes."
+            "authoritative current sources. Choosing an Area Council on NIMPA does not indicate where anyone votes."
         ),
         "sources": ["fcta_survey"],
     },
@@ -781,7 +781,7 @@ NEWS: list[dict] = [
         "category": "legislation", "label": "historical_record", "verification": "self_reported",
         "excerpt": "Thirteen bills and proposals associated with Senator Aduda, each shown at the stage its source documents — not collapsed into \"passed\".",
         "body": (
-            "NIPAM lists each bill associated with Senator Philip Tanimu Aduda as a separate record, showing the legislative "
+            "NIMPA lists each bill associated with Senator Philip Tanimu Aduda as a separate record, showing the legislative "
             "stage its source documents. A bill is not shown as law unless an official enactment or assent record is supplied.\n\n"
             "## Verified stages (National Assembly records)\n\n"
             "- **FCT Area Councils Administrative & Political Structure Bill** (2015): second reading documented by the National Assembly.\n"
@@ -811,7 +811,7 @@ NEWS: list[dict] = [
         "body": (
             "News reports describe constituency projects facilitated or attracted during Senator Aduda's representation "
             "across the six Area Councils. They are reported projects, not projects personally funded by him. Where a "
-            "report says a project was ongoing, NIPAM shows it as ongoing.\n\n"
+            "report says a project was ongoing, NIMPA shows it as ongoing.\n\n"
             "- **AMAC:** the Nyanya road / Nyanya-Hospital road network (reported value approximately ₦1.4 billion); the "
             "VIO–Police Station–Hospital, Agwan Dadi, Gbagalape, Kurudu and Jikwoyi roads (reported ongoing in 2023); a Youth "
             "& Sports Centre at Jikwoyi; Karu Town Hall; and the Nyanya Mini Stadium / Sports Centre.\n"
@@ -877,7 +877,7 @@ NEWS: list[dict] = [
             "INEC's final list of candidates for the 2023 national elections records Tanimu Philip Aduda as the Peoples "
             "Democratic Party (PDP) candidate for the FCT Senate election.\n\n"
             "Ireti Kingibe was declared winner of the election.\n\n"
-            "NIPAM keeps this record as part of Senator Aduda's public history. *Verification: the candidacy is verified "
+            "NIMPA keeps this record as part of Senator Aduda's public history. *Verification: the candidacy is verified "
             "against INEC's final list; the declared result is reported.*"
         ),
         "sources": ["inec_2023", "vanguard_mar23"],
@@ -1069,7 +1069,7 @@ def apply_news(db: Session) -> int:
             content_label=r["label"],
             source_note=r.get("source_note") or "Sources: " + "; ".join(names) + ".",
             verification_status=r["verification"],
-            author_name="NIPAM Editorial Team",
+            author_name="NIMPA Editorial Team",
             status="published",
             is_featured=r.get("featured", False),
             published_at=_published_at(i),

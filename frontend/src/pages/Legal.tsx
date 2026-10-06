@@ -11,9 +11,9 @@ const LAST_UPDATED = "September 2026";
 const DOCS = {
   privacy: {
     title: "Privacy Policy",
-    description: "What information NIPAM collects, why, how it is used, and who can access it.",
+    description: "What information NIMPA collects, why, how it is used, and who can access it.",
     body: `
-NIPAM ("we") respects your privacy. This policy explains what we collect when you use the NIPAM platform, why we collect it, how we use it and the choices you have. We process personal data in line with the **Nigeria Data Protection Act 2023**.
+NIMPA ("we") respects your privacy. This policy explains what we collect when you use the NIMPA platform, why we collect it, how we use it and the choices you have. We process personal data in line with the **Nigeria Data Protection Act 2023**.
 
 ## What we collect
 
@@ -78,9 +78,9 @@ _Last updated: ${LAST_UPDATED}_
   },
   terms: {
     title: "Terms of Use",
-    description: "The rules for using the NIPAM platform.",
+    description: "The rules for using the NIMPA platform.",
     body: `
-By creating an account or using the NIPAM platform you agree to these terms.
+By creating an account or using the NIMPA platform you agree to these terms.
 
 ## Membership
 
@@ -91,11 +91,11 @@ By creating an account or using the NIPAM platform you agree to these terms.
 
 ## Content on the platform
 
-NIPAM distinguishes between **verified information**, **announcements**, **historical records**, **opinion** and **user-generated content**. Labels and verification statuses are shown on each item. Unverified information must not be relied on as established fact. Items marked **Sample** are demonstration content and are not verified information.
+NIMPA distinguishes between **verified information**, **announcements**, **historical records**, **opinion** and **user-generated content**. Labels and verification statuses are shown on each item. Unverified information must not be relied on as established fact. Items marked **Sample** are demonstration content and are not verified information.
 
 ## Your contributions
 
-You keep ownership of what you post, and grant NIPAM permission to display it on the platform. You are responsible for your posts and must follow the [Community Guidelines](/community-guidelines). We may remove content or suspend accounts that break these terms or the guidelines.
+You keep ownership of what you post, and grant NIMPA permission to display it on the platform. You are responsible for your posts and must follow the [Community Guidelines](/community-guidelines). We may remove content or suspend accounts that break these terms or the guidelines.
 
 ## Acceptable use
 
@@ -114,9 +114,9 @@ _Last updated: ${LAST_UPDATED}_
   },
   guidelines: {
     title: "Community Guidelines",
-    description: "How we keep NIPAM discussions respectful, safe and constructive.",
+    description: "How we keep NIMPA discussions respectful, safe and constructive.",
     body: `
-The NIPAM community is a space for constructive conversation among residents of the FCT. These guidelines apply to all discussions, comments and reactions.
+The NIMPA community is a space for constructive conversation among residents of the FCT. These guidelines apply to all discussions, comments and reactions.
 
 ## Be constructive
 
@@ -152,7 +152,7 @@ Posts, comments and public profile names are checked automatically before they a
 
 ## Labels
 
-Community posts are **user-generated content** and represent their authors' views — not verified information from NIPAM.
+Community posts are **user-generated content** and represent their authors' views — not verified information from NIMPA.
 
 _Last updated: ${LAST_UPDATED}_
 `,

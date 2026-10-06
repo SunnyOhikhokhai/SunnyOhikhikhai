@@ -10,7 +10,7 @@ export function AuthShell({ title, subtitle, children, aside }: { title: string;
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(7,148,71,0.35),transparent_60%)]" />
         <SkylineArt className="absolute inset-x-0 bottom-0 h-56 w-full opacity-90" />
         <div className="relative flex h-full flex-col p-12 text-white">
-          <Link to="/" aria-label="NIPAM home"><Logo variant="with-name" tone="dark" /></Link>
+          <Link to="/" aria-label="NIMPA home"><Logo variant="with-name" tone="dark" /></Link>
           <div className="mt-auto mb-56 max-w-md">
             {aside ?? (
               <>

@@ -1,4 +1,4 @@
-/** Fetch wrapper for the NIPAM API: cookie session + CSRF double-submit. */
+/** Fetch wrapper for the NIMPA API: cookie session + CSRF double-submit. */
 
 export class ApiError extends Error {
   status: number;

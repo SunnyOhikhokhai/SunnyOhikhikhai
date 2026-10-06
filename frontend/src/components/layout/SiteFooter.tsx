@@ -26,7 +26,7 @@ const COLUMNS = [
     title: "Explore",
     links: [
       ["Sen. Philip Aduda", "/philip-aduda"],
-      ["About NIPAM", "/about"],
+      ["About NIMPA", "/about"],
       ["Our Record", "/our-record"],
       ["Area Councils", "/area-councils"],
       ["News", "/news"],
@@ -37,7 +37,7 @@ const COLUMNS = [
     title: "Participate",
     links: [
       ["Community", "/community"],
-      ["Join NIPAM", "/join"],
+      ["Join NIMPA", "/join"],
       ["Member login", "/login"],
       ["Contact", "/contact"],
     ],
@@ -70,7 +70,7 @@ export function SiteFooter() {
             <li className="flex items-center gap-2">
               <Mail className="size-4 text-green-400" />
               <Link to="/contact" className="hover:text-white">
-                Contact the NIPAM team
+                Contact the NIMPA team
               </Link>
             </li>
           </ul>
@@ -79,7 +79,7 @@ export function SiteFooter() {
               <a
                 key={label}
                 href={href}
-                aria-label={`NIPAM on ${label}`}
+                aria-label={`NIMPA on ${label}`}
                 className="flex size-10 items-center justify-center rounded-xl bg-white/5 text-navy-100 ring-1 ring-white/10 transition hover:bg-green-600 hover:text-white [&_svg]:size-[18px]"
               >
                 <Icon />
@@ -104,7 +104,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-white/10">
         <div className="container flex flex-col gap-2 py-6 text-xs text-navy-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} NIPAM — Non-Indigenes for Philip Aduda Movement. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} NIMPA — Non-Indigenes Movement for Philip Aduda. All rights reserved.</p>
           <p>Membership is voluntary. Area Council selection is not proof of electoral eligibility.</p>
         </div>
       </div>

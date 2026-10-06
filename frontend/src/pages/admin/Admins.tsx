@@ -61,7 +61,7 @@ export default function Admins() {
           ]}
         />
         <div className="space-y-6">
-          <FormSection title="Assign a role" description="The person must already have a verified NIPAM account.">
+          <FormSection title="Assign a role" description="The person must already have a verified NIMPA account.">
             <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); assign.mutate(); }}>
               <Field id="ad-email" label="Member email"><Input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
               <Field id="ad-role" label="Role"><Select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value })}>{roles.data?.map((r) => <option key={r.code} value={r.code}>{r.name}</option>)}</Select></Field>

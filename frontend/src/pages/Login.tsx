@@ -62,8 +62,8 @@ export default function Login() {
 
   return (
     <>
-      <Seo title="Login" description="Log in to your NIPAM member account." noindex />
-      <AuthShell title="Welcome back" subtitle={<>New to NIPAM? <Link to="/join" className="font-semibold text-green-600 hover:underline">Create a free account</Link></>}>
+      <Seo title="Login" description="Log in to your NIMPA member account." noindex />
+      <AuthShell title="Welcome back" subtitle={<>New to NIMPA? <Link to="/join" className="font-semibold text-green-600 hover:underline">Create a free account</Link></>}>
         <div className="mb-6 grid grid-cols-2 rounded-xl bg-surface p-1 ring-1 ring-border" role="tablist" aria-label="Login method">
           {([["password", "Password", KeyRound], ["otp", "One-time code", MessageSquareCode]] as const).map(([k, label, Icon]) => (
             <button
@@ -131,7 +131,7 @@ export default function Login() {
           </form>
         )}
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Protected by secure sessions. Never share your password or one-time codes — NIPAM staff will never ask for them.
+          Protected by secure sessions. Never share your password or one-time codes — NIMPA staff will never ask for them.
         </p>
       </AuthShell>
     </>

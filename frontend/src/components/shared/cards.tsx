@@ -238,7 +238,7 @@ export function DiscussionRow({ d }: { d: DiscussionItem }) {
         <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-slate-500">
           <span>
             {d.author.name}
-            {d.author.is_team && <span className="ml-1 font-semibold text-green-600">· NIPAM Team</span>}
+            {d.author.is_team && <span className="ml-1 font-semibold text-green-600">· NIMPA Team</span>}
           </span>
           <span className="flex items-center gap-1">
             <MessageSquare className="size-3.5" /> {d.comment_count}

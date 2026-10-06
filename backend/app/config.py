@@ -36,11 +36,11 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_password: str = ""
-    smtp_from: str = "NIPAM <no-reply@nipam.ng>"
+    smtp_from: str = "NIMPA <no-reply@nipam.ng>"
     sms_provider: str = "none"  # none | console | http
     sms_http_url: str = ""
     sms_http_token: str = ""
-    sms_sender_id: str = "NIPAM"
+    sms_sender_id: str = "NIMPA"
     # WhatsApp: none | console | cloud (Meta WhatsApp Business Cloud API).
     # Messages to members are sent with an approved template whose body has a
     # single {{1}} parameter, which receives the notification text.

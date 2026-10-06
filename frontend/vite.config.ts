@@ -37,8 +37,8 @@ export default defineConfig({
       includeAssets: ["favicon.svg", "favicon.ico", "apple-touch-icon.png", "brand/*.svg", "robots.txt"],
       manifest: {
         id: "/",
-        name: "NIPAM — Non-Indigenes for Philip Aduda Movement",
-        short_name: "NIPAM",
+        name: "NIMPA — Non-Indigenes Movement for Philip Aduda",
+        short_name: "NIMPA",
         description:
           "The support movement for Sen. Philip Aduda across the Federal Capital Territory.",
         theme_color: "#063B66",

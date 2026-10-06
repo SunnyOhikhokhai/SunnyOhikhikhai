@@ -66,7 +66,7 @@ function NewsEditor() {
   const scoped = user?.admin?.role === "area_council_admin" ? user.admin.area_council?.slug ?? "" : "";
   const [f, setF] = useState({
     title: "", excerpt: "", body: "", category: "nipam-updates", area_council: scoped, content_label: "update" as ContentLabel,
-    source_note: "", image_url: "", image_alt: "", author_name: "NIPAM Editorial Team", is_featured: false, is_demo: false,
+    source_note: "", image_url: "", image_alt: "", author_name: "NIMPA Editorial Team", is_featured: false, is_demo: false,
     verification_status: "" as VerificationStatus | "", sources: [] as LinkedSrc[],
   });
   const { data: n, isLoading } = useQuery({ queryKey: ["admin", "news-item", id], queryFn: () => getData<NewsDetail>(`/api/admin/news/${id}`), enabled: !isNew });

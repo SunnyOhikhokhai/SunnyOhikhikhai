@@ -69,7 +69,7 @@ def check_language(db: Session, user: User, request: Request | None, *texts: str
         raise ApiError(
             422,
             "abusive_language",
-            "Your post contains insulting, offensive or hateful language, which isn't allowed in the NIPAM community. "
+            "Your post contains insulting, offensive or hateful language, which isn't allowed in the NIMPA community. "
             "Please rephrase it respectfully." + warning,
         )
     return bool(result.review)

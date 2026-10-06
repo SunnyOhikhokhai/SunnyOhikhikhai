@@ -59,8 +59,8 @@ export default function News() {
 
   return (
     <>
-      <Seo title="News" description="NIPAM updates, community news, FCT news, events, announcements and public information." />
-      <PageHeader eyebrow="News" title="News & announcements" description="Updates from NIPAM and communities across the Federal Capital Territory." crumbs={[{ to: "/", label: "Home" }, { label: "News" }]} />
+      <Seo title="News" description="NIMPA updates, community news, FCT news, events, announcements and public information." />
+      <PageHeader eyebrow="News" title="News & announcements" description="Updates from NIMPA and communities across the Federal Capital Territory." crumbs={[{ to: "/", label: "Home" }, { label: "News" }]} />
       <div className="container py-8">
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 lg:mx-0 lg:px-0" role="tablist" aria-label="News categories">

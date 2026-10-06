@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 const KEY = "nipam-cookie-notice";
 
 /**
- * NIPAM uses only strictly-necessary cookies (session + security token) and no
+ * NIMPA uses only strictly-necessary cookies (session + security token) and no
  * advertising or third-party tracking, so no opt-in is required; this notice
  * informs users and links to the Privacy Policy.
  */
@@ -32,7 +32,7 @@ export function CookieNotice() {
       <div className="flex gap-3">
         <Cookie className="mt-0.5 size-5 shrink-0 text-green-600" />
         <p className="text-sm text-slate-600">
-          NIPAM uses only <strong className="text-navy">essential cookies</strong> to keep you signed in and protect your account. We do not use advertising
+          NIMPA uses only <strong className="text-navy">essential cookies</strong> to keep you signed in and protect your account. We do not use advertising
           or tracking cookies. <Link to="/privacy#cookies" className="font-semibold text-green-600 underline-offset-2 hover:underline">Learn more</Link>
         </p>
       </div>

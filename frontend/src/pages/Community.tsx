@@ -185,7 +185,7 @@ export default function Community() {
             <Link to="/community-guidelines" className="mt-4 inline-block text-sm font-semibold text-green-300 hover:text-white">Read the full guidelines →</Link>
           </div>
           <div className="rounded-2xl border border-border p-5 text-sm text-muted-foreground">
-            Posts are members' own views and are <strong className="text-navy">user-generated content</strong>, not verified information from NIPAM. Use <strong className="text-navy">Report</strong> on anything that breaks the guidelines.
+            Posts are members' own views and are <strong className="text-navy">user-generated content</strong>, not verified information from NIMPA. Use <strong className="text-navy">Report</strong> on anything that breaks the guidelines.
           </div>
         </aside>
       </div>

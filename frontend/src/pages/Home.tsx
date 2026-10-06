@@ -90,9 +90,9 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
             <span className="size-1.5 rounded-full bg-green-400" /> Federal Capital Territory · Nigeria
           </p>
           <h1 className="mt-6 font-display text-6xl font-extrabold tracking-[0.04em] text-white sm:text-7xl lg:text-8xl">
-            NIP<span className="text-green-400">A</span>M
+            NIMP<span className="text-green-400">A</span>
           </h1>
-          <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">Non-Indigenes for Philip Aduda Movement</p>
+          <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">Non-Indigenes Movement for Philip Aduda</p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 sm:text-lg">
             A digital community for information, public records, community participation and civic engagement across the Federal Capital
             Territory.
@@ -137,8 +137,8 @@ export default function Home() {
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "NIPAM",
-          alternateName: "Non-Indigenes for Philip Aduda Movement",
+          name: "NIMPA",
+          alternateName: "Non-Indigenes Movement for Philip Aduda",
           url: window.location.origin,
           logo: `${window.location.origin}/icons/icon-512.png`,
           areaServed: "Federal Capital Territory, Nigeria",
@@ -267,12 +267,12 @@ export default function Home() {
         <div className="container">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
             <div>
-              <p className="eyebrow mb-3">About NIPAM</p>
+              <p className="eyebrow mb-3">About NIMPA</p>
               <h2 id="about-heading" className="text-3xl font-extrabold sm:text-4xl">
                 One movement for Sen. Philip Aduda, across the FCT
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-                NIPAM — Non-Indigenes for Philip Aduda Movement — brings together residents and voluntary supporters across the Federal Capital
+                NIMPA — Non-Indigenes Movement for Philip Aduda — brings together residents and voluntary supporters across the Federal Capital
                 Territory to spread his name, share his record of service and keep every community informed and engaged.
               </p>
               <ul className="mt-6 space-y-3 text-[15px] text-slate-700">
@@ -288,7 +288,7 @@ export default function Home() {
               </ul>
               <Button asChild variant="outline" className="mt-8">
                 <Link to="/about">
-                  Learn more about NIPAM <ArrowRight />
+                  Learn more about NIMPA <ArrowRight />
                 </Link>
               </Button>
             </div>
@@ -483,7 +483,7 @@ export default function Home() {
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg">
                   <Link to="/join">
-                    Join NIPAM <ArrowRight />
+                    Join NIMPA <ArrowRight />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline-light">

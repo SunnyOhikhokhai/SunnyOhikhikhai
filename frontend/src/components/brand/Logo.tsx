@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 
 /**
- * NIPAM brand mark. Replace the paths below (and /public/brand/*.svg) with the
- * official NIPAM logo artwork when supplied; the component API stays the same.
+ * NIMPA brand mark. Replace the paths below (and /public/brand/*.svg) with the
+ * official NIMPA logo artwork when supplied; the component API stays the same.
  */
-export function LogoMark({ className, onDark = false, title = "NIPAM" }: { className?: string; onDark?: boolean; title?: string }) {
+export function LogoMark({ className, onDark = false, title = "NIMPA" }: { className?: string; onDark?: boolean; title?: string }) {
   return (
     <svg viewBox="0 0 64 64" className={cn("size-10 shrink-0", className)} role="img" aria-label={title}>
       <circle cx="32" cy="32" r="31" fill="#063B66" stroke={onDark ? "#FFFFFF" : "none"} strokeWidth={onDark ? 2 : 0} />
@@ -41,11 +41,11 @@ export function Logo({
       <LogoMark onDark={dark} className={variant === "with-name" ? "size-12" : "size-10"} />
       <span className="flex flex-col leading-none">
         <span className={cn("font-display text-[1.45rem] font-extrabold tracking-[0.08em]", dark ? "text-white" : "text-navy")}>
-          NIP<span className={dark ? "text-green-300" : "text-green-500"}>A</span>M
+          NIMP<span className={dark ? "text-green-300" : "text-green-500"}>A</span>
         </span>
         {variant === "with-name" && (
           <span className={cn("mt-1 max-w-[14rem] text-[10px] font-semibold uppercase leading-tight tracking-[0.12em]", dark ? "text-navy-100" : "text-silver-dark")}>
-            Non-Indigenes for Philip Aduda Movement
+            Non-Indigenes Movement for Philip Aduda
           </span>
         )}
       </span>
