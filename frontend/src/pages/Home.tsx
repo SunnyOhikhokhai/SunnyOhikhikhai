@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SkylineArt } from "@/components/brand/Artwork";
+import { FULL_NAME, FullLogo, TAGLINE } from "@/components/brand/Logo";
 import { Portrait } from "@/components/brand/Portrait";
 import { CouncilCard, DiscussionRow, EventCard, NewsCard, RecordCard } from "@/components/shared/cards";
 import { FeaturedCarousel } from "@/components/shared/FeaturedCarousel";
@@ -84,15 +85,16 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 opacity-90">
         <SkylineArt className="h-40 w-full sm:h-56 lg:h-64" />
       </div>
-      <div className="container pb-44 pt-14 sm:pb-60 sm:pt-20 lg:pb-64 lg:pt-24">
+      <div className="container grid items-center gap-10 pb-44 pt-14 sm:pb-60 sm:pt-20 lg:grid-cols-[1fr_auto] lg:pb-64 lg:pt-24">
         <div className="max-w-3xl animate-fade-up">
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-green-200 ring-1 ring-white/15 backdrop-blur">
-            <span className="size-1.5 rounded-full bg-green-400" /> Federal Capital Territory · Nigeria
+            <span className="size-1.5 rounded-full bg-green-400" /> {TAGLINE}
           </p>
           <h1 className="mt-6 font-display text-6xl font-extrabold tracking-[0.04em] text-white sm:text-7xl lg:text-8xl">
             NIMP<span className="text-green-400">A</span>
           </h1>
-          <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">Non-Indigenes Movement for Philip Aduda</p>
+          <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">{FULL_NAME}</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-200">People · Progress · Opportunities · Stronger FCT</p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 sm:text-lg">
             A digital community for information, public records, community participation and civic engagement across the Federal Capital
             Territory.
@@ -122,6 +124,7 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
             ))}
           </dl>
         </div>
+        <FullLogo onDark className="hidden w-[22rem] shadow-lift lg:block xl:w-[26rem]" />
       </div>
     </section>
   );
@@ -138,7 +141,7 @@ export default function Home() {
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "NIMPA",
-          alternateName: "Non-Indigenes Movement for Philip Aduda",
+          alternateName: "Non-Indigenous Movement for Philip Aduda",
           url: window.location.origin,
           logo: `${window.location.origin}/icons/icon-512.png`,
           areaServed: "Federal Capital Territory, Nigeria",
@@ -272,7 +275,7 @@ export default function Home() {
                 One movement for Sen. Philip Aduda, across the FCT
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-                NIMPA — Non-Indigenes Movement for Philip Aduda — brings together residents and voluntary supporters across the Federal Capital
+                NIMPA — Non-Indigenous Movement for Philip Aduda — brings together residents and voluntary supporters across the Federal Capital
                 Territory to spread his name, share his record of service and keep every community informed and engaged.
               </p>
               <ul className="mt-6 space-y-3 text-[15px] text-slate-700">

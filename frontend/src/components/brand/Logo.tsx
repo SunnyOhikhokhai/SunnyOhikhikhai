@@ -1,24 +1,27 @@
 import { cn } from "@/lib/utils";
 
+export const FULL_NAME = "Non-Indigenous Movement for Philip Aduda";
+export const TAGLINE = "FCT United for a Brighter Tomorrow";
+
 /**
- * NIMPA brand mark. Replace the paths below (and /public/brand/*.svg) with the
- * official NIMPA logo artwork when supplied; the component API stays the same.
+ * NIMPA emblem from the official logo (public/brand/nimpa-mark.png). On dark
+ * backgrounds it sits on a white disc, because the artwork uses navy.
  */
 export function LogoMark({ className, onDark = false, title = "NIMPA" }: { className?: string; onDark?: boolean; title?: string }) {
+  const img = <img src="/brand/nimpa-mark.png" alt={title} width={512} height={512} className={onDark ? "size-[86%]" : "size-full"} />;
   return (
-    <svg viewBox="0 0 64 64" className={cn("size-10 shrink-0", className)} role="img" aria-label={title}>
-      <circle cx="32" cy="32" r="31" fill="#063B66" stroke={onDark ? "#FFFFFF" : "none"} strokeWidth={onDark ? 2 : 0} />
-      <circle cx="32" cy="32" r="27.2" fill="none" stroke="#9AA0A6" strokeWidth="1.1" opacity=".75" />
-      <path d="M13.5 41.5a18.5 18.5 0 0 1 37 0" fill="none" stroke="#079447" strokeWidth="2.6" strokeLinecap="round" />
-      <circle cx="20.6" cy="28.2" r="3.4" fill="#079447" />
-      <path d="M14.6 43.2c.6-6.4 3-9.8 6-9.8s5.4 3.4 6 9.8z" fill="#079447" />
-      <circle cx="43.4" cy="28.2" r="3.4" fill="#079447" />
-      <path d="M37.4 43.2c.6-6.4 3-9.8 6-9.8s5.4 3.4 6 9.8z" fill="#079447" />
-      <circle cx="32" cy="22.4" r="4.3" fill="#FFFFFF" />
-      <path d="M23.8 43.2c.8-8.6 4-12.9 8.2-12.9s7.4 4.3 8.2 12.9z" fill="#FFFFFF" />
-      <rect x="15" y="45.2" width="34" height="2.4" rx="1.2" fill="#9AA0A6" />
-      <path d="M32 9.6l1.1 2.3 2.5.3-1.8 1.7.4 2.5-2.2-1.2-2.2 1.2.4-2.5-1.8-1.7 2.5-.3z" fill="#FFFFFF" opacity=".9" />
-    </svg>
+    <span className={cn("inline-grid size-10 shrink-0 place-items-center", onDark && "rounded-full bg-white shadow-sm", className)}>
+      {img}
+    </span>
+  );
+}
+
+/** The complete official logo: emblem, NIMPA, full name and tagline. */
+export function FullLogo({ className, onDark = false }: { className?: string; onDark?: boolean }) {
+  return (
+    <span className={cn("inline-block", onDark && "rounded-2xl bg-white p-4", className)}>
+      <img src="/brand/nimpa-logo.png" alt={`NIMPA — ${FULL_NAME}. ${TAGLINE}.`} width={1390} height={999} className="h-auto w-full" />
+    </span>
   );
 }
 
@@ -38,14 +41,14 @@ export function Logo({
   if (variant === "compact") return <LogoMark className={className} onDark={dark} />;
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark onDark={dark} className={variant === "with-name" ? "size-12" : "size-10"} />
+      <LogoMark onDark={dark} className={variant === "with-name" ? "size-12" : "size-10"} title="" />
       <span className="flex flex-col leading-none">
         <span className={cn("font-display text-[1.45rem] font-extrabold tracking-[0.08em]", dark ? "text-white" : "text-navy")}>
           NIMP<span className={dark ? "text-green-300" : "text-green-500"}>A</span>
         </span>
         {variant === "with-name" && (
           <span className={cn("mt-1 max-w-[14rem] text-[10px] font-semibold uppercase leading-tight tracking-[0.12em]", dark ? "text-navy-100" : "text-silver-dark")}>
-            Non-Indigenes Movement for Philip Aduda
+            {FULL_NAME}
           </span>
         )}
       </span>

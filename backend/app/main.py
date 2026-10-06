@@ -70,7 +70,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="NIMPA API",
     version="1.0.0",
-    description="Non-Indigenes Movement for Philip Aduda — community platform API.",
+    description="Non-Indigenous Movement for Philip Aduda — community platform API.",
     lifespan=lifespan,
     docs_url=None if settings.is_production else "/api/docs",
     redoc_url=None,

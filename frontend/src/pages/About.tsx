@@ -1,5 +1,6 @@
 import { ArrowRight, BadgeCheck, CalendarCheck, Eye, HeartHandshake, Lock, MessageSquare, Scale, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FullLogo } from "@/components/brand/Logo";
 import { PageHeader, SectionHeading } from "@/components/shared/PageHeader";
 import { Seo } from "@/components/shared/Seo";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ export default function About() {
       <Seo title="About" description="What NIMPA is, why it exists, its values and how people can take part." />
       <PageHeader
         eyebrow="About NIMPA"
-        title="Non-Indigenes Movement for Philip Aduda"
+        title="Non-Indigenous Movement for Philip Aduda"
         description="NIMPA is a voluntary support group for Sen. Philip Aduda, uniting residents and supporters across the Federal Capital Territory."
         crumbs={[{ to: "/", label: "Home" }, { label: "About" }]}
       />
@@ -37,7 +38,7 @@ export default function About() {
             <h2 className="text-3xl font-extrabold">A support group for Sen. Philip Aduda</h2>
             <div className="prose-nipam mt-5">
               <p>
-                The Federal Capital Territory is home to people from every part of Nigeria. NIMPA — Non-Indigenes Movement for Philip Aduda —
+                The Federal Capital Territory is home to people from every part of Nigeria. NIMPA — Non-Indigenous Movement for Philip Aduda —
                 unites residents, including those who are not indigenes of the Territory, in support of <Link to="/philip-aduda">Sen. Philip Aduda</Link>.
               </p>
               <p>
@@ -47,6 +48,7 @@ export default function About() {
             </div>
           </div>
           <div>
+            <FullLogo className="mb-10 w-full max-w-sm" />
             <p className="eyebrow mb-3">Why it exists</p>
             <h2 className="text-3xl font-extrabold">Spreading his name, far and wide</h2>
             <div className="prose-nipam mt-5">

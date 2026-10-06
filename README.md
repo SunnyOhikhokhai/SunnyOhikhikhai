@@ -1,4 +1,4 @@
-# NIMPA — Non-Indigenes Movement for Philip Aduda
+# NIMPA — Non-Indigenous Movement for Philip Aduda
 
 > **Quick start on Windows (no commands needed)**
 > 1. Install [Python](https://www.python.org/downloads/) (tick **"Add python.exe to PATH"**) and [Node.js LTS](https://nodejs.org).
@@ -112,7 +112,7 @@ CI (`.github/workflows/ci.yml`) runs lint, the API tests on SQLite and PostgreSQ
 
 ## Before launch — to be supplied by NIMPA
 
-- **Official logo:** the current mark in `frontend/src/components/brand/Logo.tsx` and `frontend/public/brand/*.svg` is a placeholder based on the brief. Replace it, then run `npm run icons` to regenerate the favicon, PWA icons, splash screens and Open Graph image.
+- **Logo:** the official NIMPA logo is in `frontend/brand-source/`. To replace it, save the new artwork there, run `node scripts/prepare-logo.mjs <file>` (it makes the transparent `public/brand/nimpa-logo.png` and the emblem `nimpa-mark.png`; adjust `EMBLEM` in the script if the layout differs), then `npm run icons` to rebuild the favicon, app icons, splash screens and share image.
 - **Official portrait:** upload it under **Admin → Senator profile** once obtained with permission from his official website (see [`docs/content-pack.md`](docs/content-pack.md) for the other open items).
 - **Sample events and discussions:** the content pack replaces the sample records and news; sample events and discussions remain until real ones are added (or run the seed without `--demo`).
 - **Social media links** in `SiteFooter.tsx`, and contact details.

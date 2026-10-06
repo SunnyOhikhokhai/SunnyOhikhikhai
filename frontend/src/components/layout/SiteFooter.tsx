@@ -1,6 +1,6 @@
 import { Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Logo } from "@/components/brand/Logo";
+import { FullLogo } from "@/components/brand/Logo";
 import { FacebookIcon, WhatsAppIcon, XIcon } from "@/components/shared/Share";
 
 function InstagramIcon() {
@@ -58,7 +58,7 @@ export function SiteFooter() {
       <div className="h-1 bg-gradient-to-r from-green-600 via-green-500 to-navy-500" />
       <div className="container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div className="space-y-5">
-          <Logo variant="with-name" tone="dark" />
+          <FullLogo onDark className="w-64" />
           <p className="max-w-sm text-sm leading-relaxed text-navy-200">
             The support movement for Sen. Philip Aduda — uniting residents across the Federal Capital Territory, sharing his record and
             spreading his message.
@@ -104,7 +104,7 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-white/10">
         <div className="container flex flex-col gap-2 py-6 text-xs text-navy-300 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} NIMPA — Non-Indigenes Movement for Philip Aduda. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} NIMPA — Non-Indigenous Movement for Philip Aduda. All rights reserved.</p>
           <p>Membership is voluntary. Area Council selection is not proof of electoral eligibility.</p>
         </div>
       </div>

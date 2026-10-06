@@ -34,10 +34,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "prompt",
-      includeAssets: ["favicon.svg", "favicon.ico", "apple-touch-icon.png", "brand/*.svg", "robots.txt"],
+      includeAssets: ["favicon.png", "apple-touch-icon.png", "brand/*.png", "robots.txt"],
       manifest: {
         id: "/",
-        name: "NIMPA — Non-Indigenes Movement for Philip Aduda",
+        name: "NIMPA — Non-Indigenous Movement for Philip Aduda",
         short_name: "NIMPA",
         description:
           "The support movement for Sen. Philip Aduda across the Federal Capital Territory.",

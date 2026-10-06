@@ -31,7 +31,7 @@ COLUMNS = {
     "notifications": ["title", "body"],
 }
 RENAMES = [
-    ("Non-Indigenes for Philip Aduda Movement", "Non-Indigenes Movement for Philip Aduda"),
+    ("Non-Indigenes for Philip Aduda Movement", "Non-Indigenous Movement for Philip Aduda"),
     ("NIPAM", "NIMPA"),
 ]
 ACCOUNTS = [("users", "full_name", "NIPAM Administrator", "NIMPA Administrator"), ("profiles", "display_name", "NIPAM Team", "NIMPA Team")]
