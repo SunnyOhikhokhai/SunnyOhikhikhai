@@ -21,6 +21,15 @@ from .routers import admin, auth, community, content, notifications, public, use
 log = logging.getLogger("nipam")
 settings = get_settings()
 
+# Show NIPAM's own messages (including the console email/SMS/WhatsApp
+# providers used in development) in the server window.
+if not log.handlers:
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter("%(levelname)s:     %(name)s: %(message)s"))
+    log.addHandler(_handler)
+    log.setLevel(logging.INFO)
+    log.propagate = False
+
 
 def run_scheduled_jobs() -> None:
     """Dispatch notifications for scheduled announcements whose time has come."""

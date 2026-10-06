@@ -29,7 +29,7 @@ class ConsoleWhatsAppProvider(WhatsAppProvider):
     def send(self, to: str, text: str) -> None:
         outbox.append({"to": to, "text": text})
         del outbox[:-200]
-        log.info("[console whatsapp] to=%s", to)
+        log.info("[console whatsapp] to=%s message=%r", to, text[:120])
 
 
 class CloudWhatsAppProvider(WhatsAppProvider):
