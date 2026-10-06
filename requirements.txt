@@ -1,2 +1,13 @@
-# Python packages for the Vercel deployment (the backend's own list).
--r backend/requirements.txt
+# Python packages for the Vercel deployment. Keep identical to backend/requirements.txt
+# (a test checks this; Vercel can't follow '-r' includes).
+fastapi>=0.115.6
+uvicorn[standard]>=0.34.0
+SQLAlchemy>=2.0.36
+alembic>=1.14.0
+pydantic>=2.10.4
+pydantic-settings>=2.7.0
+email-validator>=2.2.0
+psycopg[binary]>=3.2.10
+argon2-cffi>=23.1.0
+python-multipart>=0.0.20
+httpx>=0.28.1
