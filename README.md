@@ -123,4 +123,3 @@ CI (`.github/workflows/ci.yml`) runs lint, the API tests on SQLite and PostgreSQ
 - **Legal review:** have the Privacy Policy, Terms and Guidelines (`frontend/src/pages/Legal.tsx`) reviewed against the Nigeria Data Protection Act 2023.
 - **Map:** the Area Council map is schematic and labelled as such. If official GIS boundaries are adopted, replace `REGIONS` in `FctMap.tsx` and cite the source.
 
-> The repository root also contains an empty Django scaffold (`manage.py`, `SunnyOhikhokhai/`) from the initial commit. It is not used by the platform and can be removed.

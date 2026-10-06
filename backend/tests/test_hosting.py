@@ -85,3 +85,14 @@ def test_first_use_setup_is_idempotent(api):
     ensure_setup()  # imports the content pack into the seeded test database
     ensure_setup()  # second run does nothing
     assert api.get("/api/projects", params={"page_size": 100}).json()["meta"]["total"] == len(PROJECTS)
+
+
+def test_vercel_requirements_match_backend():
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+
+    def packages(path):
+        return [line.strip() for line in path.read_text().splitlines() if line.strip() and not line.startswith("#")]
+
+    assert packages(root / "requirements.txt") == packages(root / "backend" / "requirements.txt")
