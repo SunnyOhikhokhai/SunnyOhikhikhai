@@ -93,6 +93,10 @@ The end-to-end script covers registration → verification → consent → dashb
 
 ## Deployment
 
+**Vercel (quickest):** see [`docs/deploy-vercel.md`](docs/deploy-vercel.md). The site is served by Vercel with a Neon Postgres database and Vercel Blob for uploads, and it sets itself up on the first visit.
+
+**Docker:**
+
 ```bash
 cp .env.example .env    # set real secrets, SMTP and admin credentials
 docker compose up -d --build

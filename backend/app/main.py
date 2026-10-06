@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import threading
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -13,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import or_, select
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from .config import get_settings
+from .config import ON_VERCEL, get_settings
 from .database import SessionLocal
 from .errors import ApiError
 from .routers import admin, auth, community, content, notifications, public, users
@@ -59,9 +61,41 @@ async def _scheduler() -> None:
         await asyncio.sleep(60)
 
 
+def ensure_setup() -> None:
+    """Create/upgrade the database and import the content pack (NIPAM_AUTO_SETUP).
+
+    Cheap once done: it only checks that the schema is current and the
+    content has been imported."""
+    from sqlalchemy import inspect
+
+    from .database import engine
+    from .migrate import migrate
+    from .models import Source
+
+    tables = set(inspect(engine).get_table_names())
+    migrate()
+    with SessionLocal() as db:
+        if "sources" in tables and db.scalar(select(Source.id).limit(1)):
+            return
+        from .content_pack import apply
+        from .seed import seed_admin, seed_reference
+
+        seed_reference(db)
+        seed_admin(db)
+        result = apply(db)
+        log.info("first-time setup complete: %s", result)
+
+
+_setup_lock = threading.Lock()
+_setup_done = False
+_last_jobs_run = 0.0
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    task = asyncio.create_task(_scheduler()) if settings.env != "test" else None
+    # Serverless hosts (Vercel) don't keep background tasks alive between
+    # requests; scheduled jobs run from the request middleware there instead.
+    task = asyncio.create_task(_scheduler()) if settings.env != "test" and not ON_VERCEL else None
     yield
     if task:
         task.cancel()
@@ -84,6 +118,27 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "X-CSRF-Token", "Authorization"],
 )
+
+
+@app.middleware("http")
+async def first_use_setup(request: Request, call_next):
+    global _setup_done, _last_jobs_run
+    if settings.auto_setup and not _setup_done:
+        def _run() -> None:
+            global _setup_done
+            with _setup_lock:
+                if not _setup_done:
+                    ensure_setup()
+                    _setup_done = True
+
+        await asyncio.to_thread(_run)
+    if ON_VERCEL and time.monotonic() - _last_jobs_run > 60:
+        _last_jobs_run = time.monotonic()
+        try:
+            await asyncio.to_thread(run_scheduled_jobs)
+        except Exception:  # pragma: no cover
+            log.exception("scheduled job failed")
+    return await call_next(request)
 
 
 @app.middleware("http")
