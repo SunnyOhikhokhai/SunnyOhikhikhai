@@ -38,7 +38,7 @@ class Boundary extends Component<{ children: ReactNode }, { error: Error | null 
     return (
       <main role="alert" className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-4 px-4 text-center">
         <h1 className="text-2xl font-extrabold text-navy">Something went wrong on this page</h1>
-        <p className="text-slate-600">Reloading usually fixes it. If it keeps happening, send the NIPAM team a screenshot of this message.</p>
+        <p className="text-slate-600">Reloading usually fixes it. If it keeps happening, send the NIMPA team a screenshot of this message.</p>
         <div className="flex flex-wrap justify-center gap-3">
           <button
             type="button"

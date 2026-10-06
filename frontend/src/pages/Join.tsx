@@ -144,7 +144,7 @@ export default function Join() {
       }),
     onSuccess: async () => {
       await refresh();
-      toast.success(`Welcome to NIPAM, ${user?.first_name ?? ""}!`);
+      toast.success(`Welcome to NIMPA, ${user?.first_name ?? ""}!`);
       navigate("/dashboard");
     },
     onError: (e: Error) => toast.error(e.message),
@@ -154,7 +154,7 @@ export default function Join() {
 
   return (
     <>
-      <Seo title="Join NIPAM" description="Create your free NIPAM account in four simple steps." />
+      <Seo title="Join NIMPA" description="Create your free NIMPA account in four simple steps." />
       <AuthShell
         title={["Create your account", "Where do you live?", "Verify your account", "Your communication choices"][step]}
         subtitle={
@@ -327,7 +327,7 @@ export default function Join() {
                     </div>
                   </form>
                 ) : (
-                  <p className="mt-3 text-sm text-muted-foreground">SMS verification will be available once NIPAM connects an SMS provider. You can verify later from your settings.</p>
+                  <p className="mt-3 text-sm text-muted-foreground">SMS verification will be available once NIMPA connects an SMS provider. You can verify later from your settings.</p>
                 )
               )}
             </section>
@@ -357,7 +357,7 @@ export default function Join() {
             </div>
             {[
               { key: "events", title: "Event notifications", text: "New events and reminders for events you register for." },
-              { key: "announcements", title: "Important platform announcements", text: "Official NIPAM announcements for the FCT and your Area Council." },
+              { key: "announcements", title: "Important platform announcements", text: "Official NIMPA announcements for the FCT and your Area Council." },
             ].map((row) => (
               <fieldset key={row.key} className="rounded-2xl border border-border p-4">
                 <legend className="sr-only">{row.title}</legend>
@@ -383,7 +383,7 @@ export default function Join() {
               </fieldset>
             ))}
             <p className="text-[13px] text-muted-foreground">
-              In-app notifications appear in your NIPAM notification centre. We never subscribe you to unrelated communications and never share your contact details.
+              In-app notifications appear in your NIMPA notification centre. We never subscribe you to unrelated communications and never share your contact details.
             </p>
             <Button size="lg" className="w-full" loading={savePrefs.isPending} onClick={() => savePrefs.mutate()}>
               Finish and go to my dashboard <ArrowRight />

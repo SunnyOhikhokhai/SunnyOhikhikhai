@@ -10,10 +10,10 @@ interface SeoProps {
 }
 
 const DEFAULT_DESC =
-  "NIPAM — Non-Indigenes for Philip Aduda Movement — the support movement for Sen. Philip Aduda across the Federal Capital Territory.";
+  "NIMPA — Non-Indigenous Movement for Philip Aduda — the support movement for Sen. Philip Aduda across the Federal Capital Territory.";
 
 export function Seo({ title, description = DEFAULT_DESC, image, type = "website", noindex, jsonLd }: SeoProps) {
-  const full = title ? `${title} | NIPAM` : "NIPAM — Non-Indigenes for Philip Aduda Movement";
+  const full = title ? `${title} | NIMPA` : "NIMPA — Non-Indigenous Movement for Philip Aduda";
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const url = typeof window !== "undefined" ? origin + window.location.pathname : "";
   const img = image ? (image.startsWith("http") ? image : origin + image) : `${origin}/og-image.png`;

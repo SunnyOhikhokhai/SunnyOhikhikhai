@@ -1,49 +1,46 @@
-// Generates PWA/app icons, favicon PNGs, splash screens and the Open Graph
-// image from the SVG brand mark. Run with: npm run icons
-import { readFile, writeFile, mkdir } from "node:fs/promises";
+// Generates PWA/app icons, favicons, splash screens and the Open Graph image
+// from the official NIMPA logo (public/brand/nimpa-mark.png and nimpa-logo.png,
+// produced by scripts/prepare-logo.mjs). Run with: npm run icons
+import { mkdir, writeFile } from "node:fs/promises";
 import sharp from "sharp";
 
-const mark = await readFile("public/brand/nipam-mark.svg");
-const onDark = await readFile("public/brand/nipam-mark-on-dark.svg");
+const MARK = "public/brand/nimpa-mark.png";
+const LOGO = "public/brand/nimpa-logo.png";
+const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 await mkdir("public/icons", { recursive: true });
 
-const png = (svg, size) => sharp(svg, { density: 512 }).resize(size, size).png();
+/** The emblem centred on a square canvas, `scale` of the side, on `background`. */
+async function icon(size, scale, background = { r: 0, g: 0, b: 0, alpha: 0 }) {
+  const inner = await sharp(MARK).resize(Math.round(size * scale)).toBuffer();
+  return sharp({ create: { width: size, height: size, channels: 4, background } }).composite([{ input: inner, gravity: "center" }]).png();
+}
 
-for (const size of [192, 512]) await png(mark, size).toFile(`public/icons/icon-${size}.png`);
-await png(mark, 32).toFile("public/icons/favicon-32.png");
-await png(mark, 180)
-  .flatten({ background: "#063B66" })
-  .toFile("public/apple-touch-icon.png");
+await (await icon(32, 1)).toFile("public/icons/favicon-32.png");
+await (await icon(48, 1)).toFile("public/favicon.png");
+for (const size of [192, 512]) await (await icon(size, 0.92, WHITE)).toFile(`public/icons/icon-${size}.png`);
+await (await icon(180, 0.86, WHITE)).flatten({ background: "#FFFFFF" }).toFile("public/apple-touch-icon.png");
+// Maskable icon: emblem inside the central safe zone.
+await (await icon(512, 0.7, WHITE)).toFile("public/icons/maskable-512.png");
 
-// Maskable icon: full-bleed navy with the emblem inside the safe zone.
-const maskable = await png(onDark, 340).toBuffer();
-await sharp({ create: { width: 512, height: 512, channels: 4, background: "#063B66" } })
-  .composite([{ input: maskable, gravity: "center" }])
-  .png()
-  .toFile("public/icons/maskable-512.png");
-
-// iOS splash screens (navy with centred emblem).
+// iOS splash screens: full logo centred on white.
 for (const [w, h] of [[1170, 2532], [1290, 2796], [750, 1334], [1668, 2388]]) {
-  const emblem = await png(onDark, Math.round(w * 0.34)).toBuffer();
-  await sharp({ create: { width: w, height: h, channels: 4, background: "#063B66" } })
-    .composite([{ input: emblem, gravity: "center" }])
+  const logo = await sharp(LOGO).resize({ width: Math.round(w * 0.7) }).toBuffer();
+  await sharp({ create: { width: w, height: h, channels: 4, background: WHITE } })
+    .composite([{ input: logo, gravity: "center" }])
     .png()
     .toFile(`public/icons/splash-${w}x${h}.png`);
 }
 
-// Open Graph image (1200x630).
-const og = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#063B66"/><stop offset="1" stop-color="#04243F"/></linearGradient></defs>
-  <rect width="1200" height="630" fill="url(#g)"/>
-  <rect x="0" y="600" width="1200" height="30" fill="#079447"/>
-  <text x="400" y="300" font-family="DejaVu Sans, Arial, sans-serif" font-size="120" font-weight="800" fill="#FFFFFF" letter-spacing="8">NIPAM</text>
-  <text x="404" y="370" font-family="DejaVu Sans, Arial, sans-serif" font-size="30" fill="#CDEFDB">Non-Indigenes for Philip Aduda Movement</text>
-  <text x="404" y="430" font-family="DejaVu Sans, Arial, sans-serif" font-size="24" fill="#D5D9DD">Community · Information · Participation — FCT, Nigeria</text>
-</svg>`;
-const emblem = await png(onDark, 260).toBuffer();
-await sharp(Buffer.from(og))
-  .composite([{ input: emblem, left: 90, top: 170 }])
+// Open Graph image (1200x630): full logo on white with a green base line.
+const logo = await sharp(LOGO).resize({ height: 560 }).toBuffer({ resolveWithObject: true });
+await sharp({ create: { width: 1200, height: 630, channels: 4, background: WHITE } })
+  .composite([
+    { input: logo.data, top: 24, left: Math.round((1200 - logo.info.width) / 2) },
+    { input: { create: { width: 1200, height: 16, channels: 4, background: "#079447" } }, top: 614, left: 0 },
+  ])
+  .flatten({ background: "#FFFFFF" })
   .png()
   .toFile("public/og-image.png");
+
 await writeFile("public/icons/.generated", new Date().toISOString());
 console.log("Icons generated.");

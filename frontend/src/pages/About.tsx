@@ -1,5 +1,6 @@
 import { ArrowRight, BadgeCheck, CalendarCheck, Eye, HeartHandshake, Lock, MessageSquare, Scale, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FullLogo } from "@/components/brand/Logo";
 import { PageHeader, SectionHeading } from "@/components/shared/PageHeader";
 import { Seo } from "@/components/shared/Seo";
 import { Button } from "@/components/ui/button";
@@ -22,22 +23,22 @@ const STEPS = [
 export default function About() {
   return (
     <>
-      <Seo title="About" description="What NIPAM is, why it exists, its values and how people can take part." />
+      <Seo title="About" description="What NIMPA is, why it exists, its values and how people can take part." />
       <PageHeader
-        eyebrow="About NIPAM"
-        title="Non-Indigenes for Philip Aduda Movement"
-        description="NIPAM is a voluntary support group for Sen. Philip Aduda, uniting residents and supporters across the Federal Capital Territory."
+        eyebrow="About NIMPA"
+        title="Non-Indigenous Movement for Philip Aduda"
+        description="NIMPA is a voluntary support group for Sen. Philip Aduda, uniting residents and supporters across the Federal Capital Territory."
         crumbs={[{ to: "/", label: "Home" }, { label: "About" }]}
       />
 
       <section className="section">
         <div className="container grid gap-12 lg:grid-cols-2">
           <div>
-            <p className="eyebrow mb-3">What NIPAM is</p>
+            <p className="eyebrow mb-3">What NIMPA is</p>
             <h2 className="text-3xl font-extrabold">A support group for Sen. Philip Aduda</h2>
             <div className="prose-nipam mt-5">
               <p>
-                The Federal Capital Territory is home to people from every part of Nigeria. NIPAM — Non-Indigenes for Philip Aduda Movement —
+                The Federal Capital Territory is home to people from every part of Nigeria. NIMPA — Non-Indigenous Movement for Philip Aduda —
                 unites residents, including those who are not indigenes of the Territory, in support of <Link to="/philip-aduda">Sen. Philip Aduda</Link>.
               </p>
               <p>
@@ -47,15 +48,16 @@ export default function About() {
             </div>
           </div>
           <div>
+            <FullLogo className="mb-10 w-full max-w-sm" />
             <p className="eyebrow mb-3">Why it exists</p>
             <h2 className="text-3xl font-extrabold">Spreading his name, far and wide</h2>
             <div className="prose-nipam mt-5">
               <p>
-                NIPAM gives Sen. Philip Aduda wider coverage across all six Area Councils — sharing his record, his events and his message
+                NIMPA gives Sen. Philip Aduda wider coverage across all six Area Councils — sharing his record, his events and his message
                 with every community. His record is documented with sources, so supporters can share it with confidence.
               </p>
               <p>
-                Membership is voluntary. NIPAM does not infer anyone's views from ethnicity, religion, indigene status or other personal
+                Membership is voluntary. NIMPA does not infer anyone's views from ethnicity, religion, indigene status or other personal
                 characteristics, and members choose which messages they receive.
               </p>
             </div>
@@ -123,7 +125,7 @@ export default function About() {
           <ul className="space-y-3">
             {[
               ["Verified information", "Checked against a cited source before publication."],
-              ["Announcements", "Official notices from NIPAM, marked as such."],
+              ["Announcements", "Official notices from NIMPA, marked as such."],
               ["Historical records", "Documented past activities with their original references."],
               ["Opinion", "Commentary, clearly separated from factual reporting."],
               ["User-generated content", "Community posts — members' own views, moderated against our guidelines."],
@@ -141,7 +143,7 @@ export default function About() {
         <div className="container mt-14 flex flex-col items-center gap-3 text-center">
           <Button asChild size="lg">
             <Link to="/join">
-              Join NIPAM <ArrowRight />
+              Join NIMPA <ArrowRight />
             </Link>
           </Button>
           <Link to="/privacy" className="text-sm font-semibold text-green-600 hover:underline">

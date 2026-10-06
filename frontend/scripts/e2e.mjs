@@ -52,9 +52,9 @@ const m = await newPage(390);
 
 await check("Home renders on mobile", async () => {
   await m.goto(BASE);
-  await m.getByRole("heading", { level: 1, name: /NIPAM/ }).waitFor();
+  await m.getByRole("heading", { level: 1, name: /NIMPA/ }).waitFor();
   await m.getByRole("button", { name: "Open menu" }).click();
-  await m.getByRole("dialog").getByRole("link", { name: "Join NIPAM" }).click();
+  await m.getByRole("dialog").getByRole("link", { name: "Join NIMPA" }).click();
 }, m);
 
 await check("Registration step 1 — personal information", async () => {
@@ -239,7 +239,7 @@ await check("Admin login → overview", async () => {
   await a.getByLabel("Email or phone number").fill(ADMIN.email);
   await a.getByLabel("Password", { exact: true }).fill(ADMIN.password);
   await a.getByRole("button", { name: "Log in" }).click();
-  await a.getByRole("heading", { name: /Welcome, NIPAM/ }).waitFor();
+  await a.getByRole("heading", { name: /Welcome, NIMPA/ }).waitFor();
   await a.getByText("Membership growth").waitFor();
 }, a);
 

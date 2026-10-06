@@ -62,7 +62,7 @@ function EventEditor() {
   const confirm = useConfirm();
   const qc = useQueryClient();
   const meta = useMeta();
-  const [f, setF] = useState({ title: "", summary: "", description: "", starts_at: "", ends_at: "", location: "", area_council: scoped, image_url: "", organizer: "NIPAM", registration_open: true, capacity: "", is_demo: false });
+  const [f, setF] = useState({ title: "", summary: "", description: "", starts_at: "", ends_at: "", location: "", area_council: scoped, image_url: "", organizer: "NIMPA", registration_open: true, capacity: "", is_demo: false });
   const { data: e, isLoading } = useQuery({ queryKey: ["admin", "event", id], queryFn: () => getData<EventItem>(`/api/admin/events/${id}`), enabled: !isNew });
   useEffect(() => {
     if (e) setF({ title: e.title, summary: e.summary, description: e.description ?? "", starts_at: toLocalInput(e.starts_at), ends_at: toLocalInput(e.ends_at), location: e.location, area_council: e.area_council?.slug ?? "", image_url: e.image_url ?? "", organizer: e.organizer, registration_open: e.registration_open, capacity: e.capacity ? String(e.capacity) : "", is_demo: e.is_demo });

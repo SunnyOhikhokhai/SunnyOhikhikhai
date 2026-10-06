@@ -60,7 +60,7 @@ function ProfileTab({ user }: { user: Me }) {
       <form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); setErrors({}); m.mutate(); }}>
         <Field id="p-name" label="Full name" error={errors.full_name}><Input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} required /></Field>
         <Field id="p-display" label="Display name" optional hint="Shown publicly instead of your full name."><Input value={f.display_name} onChange={(e) => setF({ ...f, display_name: e.target.value })} maxLength={80} /></Field>
-        <Field id="p-email" label="Email address" hint="Contact NIPAM to change your email."><Input value={user.email} disabled /></Field>
+        <Field id="p-email" label="Email address" hint="Contact NIMPA to change your email."><Input value={user.email} disabled /></Field>
         <Field id="p-phone" label="Phone number" optional error={errors.phone} hint="Changing it requires re-verification."><Input type="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
         <Field id="p-council" label="Area Council" hint="Self-declared. Not a statement of electoral eligibility.">
           <Select value={f.area_council} onChange={(e) => setF({ ...f, area_council: e.target.value })}>
@@ -127,7 +127,7 @@ function VerifyRow({ channel, user }: { channel: "email" | "sms"; user: Me }) {
 }
 
 const PREF_ROWS: { title: string; description: string; keys: [keyof Preferences, string][] }[] = [
-  { title: "Platform announcements", description: "Official NIPAM announcements for the FCT and your Area Council.", keys: [["in_app_announcements", "In-app"], ["email_announcements", "Email"], ["sms_announcements", "SMS"], ["whatsapp_announcements", "WhatsApp"]] },
+  { title: "Platform announcements", description: "Official NIMPA announcements for the FCT and your Area Council.", keys: [["in_app_announcements", "In-app"], ["email_announcements", "Email"], ["sms_announcements", "SMS"], ["whatsapp_announcements", "WhatsApp"]] },
   { title: "Events", description: "New events and changes to events you've registered for.", keys: [["in_app_events", "In-app"], ["email_events", "Email"], ["sms_events", "SMS"], ["whatsapp_events", "WhatsApp"]] },
   { title: "Community updates", description: "Replies to your discussions and comments.", keys: [["in_app_community", "In-app"], ["email_community", "Email"]] },
   { title: "Area Council updates", description: "News published for your Area Council.", keys: [["in_app_council_updates", "In-app"]] },
@@ -144,7 +144,7 @@ function NotificationsTab({ user }: { user: Me }) {
   });
   if (!data) return <Skeleton className="h-80" />;
   return (
-    <Section title="Communication preferences" description="Choose how NIPAM contacts you. Account and security messages are essential and always sent.">
+    <Section title="Communication preferences" description="Choose how NIMPA contacts you. Account and security messages are essential and always sent.">
       <div className="divide-y divide-border">
         {PREF_ROWS.map((row) => (
           <div key={row.title} className="grid gap-3 py-5 first:pt-0 last:pb-0 sm:grid-cols-[1fr_auto] sm:items-center">
@@ -171,8 +171,8 @@ function NotificationsTab({ user }: { user: Me }) {
         ))}
       </div>
       <p className="mt-6 rounded-xl bg-surface p-4 text-xs text-muted-foreground">
-        {!data.sms_enabled ? "SMS delivery will be enabled once NIPAM connects an approved SMS provider. " : ""}
-        {!data.whatsapp_enabled ? "WhatsApp messages will be enabled once NIPAM connects its WhatsApp Business account. " : ""}
+        {!data.sms_enabled ? "SMS delivery will be enabled once NIMPA connects an approved SMS provider. " : ""}
+        {!data.whatsapp_enabled ? "WhatsApp messages will be enabled once NIMPA connects its WhatsApp Business account. " : ""}
         {!user.phone_verified && (data.sms_enabled || data.whatsapp_enabled) ? "Verify your phone number to receive SMS or WhatsApp messages. " : ""}
         WhatsApp messages are only sent if you switch them on.
         Email options require a verified email address. We never share your contact details.
@@ -232,7 +232,7 @@ function PrivacyTab() {
           variant="destructive"
           className="mt-5"
           onClick={async () => {
-            if (await confirm({ title: "Delete your NIPAM account?", description: "You will need to enter your password to confirm.", confirmLabel: "Continue", destructive: true })) setOpen(true);
+            if (await confirm({ title: "Delete your NIMPA account?", description: "You will need to enter your password to confirm.", confirmLabel: "Continue", destructive: true })) setOpen(true);
           }}
         >
           Delete my account

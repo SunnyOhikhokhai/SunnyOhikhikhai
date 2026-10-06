@@ -331,7 +331,7 @@ class NewsIn(Clean):
     sources: list[LinkedSourceIn] = Field(default_factory=list, max_length=20)
     image_url: str | None = Field(default=None, max_length=500)
     image_alt: str | None = Field(default=None, max_length=300)
-    author_name: str = Field(default="NIPAM Editorial Team", max_length=120)
+    author_name: str = Field(default="NIMPA Editorial Team", max_length=120)
     is_featured: bool = False
     is_demo: bool = False
     _url = field_validator("image_url")(classmethod(lambda cls, v: _check_url(v)))
@@ -346,7 +346,7 @@ class EventIn(Clean):
     location: str = Field(min_length=2, max_length=200)
     area_council: str | None = Field(default=None, max_length=40)
     image_url: str | None = Field(default=None, max_length=500)
-    organizer: str = Field(default="NIPAM", max_length=160)
+    organizer: str = Field(default="NIMPA", max_length=160)
     registration_open: bool = True
     capacity: int | None = Field(default=None, ge=1, le=100000)
     is_demo: bool = False

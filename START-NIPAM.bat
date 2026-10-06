@@ -7,11 +7,11 @@ if /i not "%~1"=="--run" (
   exit /b
 )
 set "ROOT=%~2"
-title NIPAM - Starting up
+title NIMPA - Starting up
 cd /d "%ROOT%"
 echo.
 echo  ==========================================
-echo    NIPAM - starting the platform
+echo    NIMPA - starting the platform
 echo  ==========================================
 echo.
 
@@ -60,9 +60,9 @@ cd /d "%ROOT%frontend"
 call npm install --no-audit --no-fund --loglevel=error
 if errorlevel 1 goto :failed
 
-echo  [4/4] Starting NIPAM...
-start "NIPAM backend - keep this window open" /d "%ROOT%backend" cmd /k ".venv\Scripts\python.exe -m uvicorn app.main:app --port 8000"
-start "NIPAM website - keep this window open" /d "%ROOT%frontend" cmd /k "npm run dev"
+echo  [4/4] Starting NIMPA...
+start "NIMPA backend - keep this window open" /d "%ROOT%backend" cmd /k ".venv\Scripts\python.exe -m uvicorn app.main:app --port 8000"
+start "NIMPA website - keep this window open" /d "%ROOT%frontend" cmd /k "npm run dev"
 
 echo.
 echo  Opening http://localhost:5173 in your browser...
@@ -70,8 +70,8 @@ timeout /t 8 /nobreak >nul
 start "" http://localhost:5173
 
 echo.
-echo  NIPAM is running. Two windows are open - keep them open while you use the site.
-echo  To stop NIPAM, close those two windows.
+echo  NIMPA is running. Two windows are open - keep them open while you use the site.
+echo  To stop NIMPA, close those two windows.
 echo.
 echo  Admin login:  admin@nipam.local  /  ChangeMe!Admin2026
 echo  Member login: member@nipam.local  /  Member!Demo2026

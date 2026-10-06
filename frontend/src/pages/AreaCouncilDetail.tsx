@@ -53,7 +53,7 @@ export default function AreaCouncilDetail() {
             <span className="rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white">Your Area Council</span>
           ) : !user ? (
             <Button asChild>
-              <Link to="/join">Join NIPAM</Link>
+              <Link to="/join">Join NIMPA</Link>
             </Button>
           ) : null
         }

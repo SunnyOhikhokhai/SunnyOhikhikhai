@@ -131,7 +131,7 @@ export function SiteHeader() {
         )}
       >
         <div className="container flex h-16 items-center gap-3 lg:h-[72px]">
-          <Link to="/" className="mr-2 shrink-0 rounded-lg" aria-label="NIPAM home">
+          <Link to="/" className="mr-2 shrink-0 rounded-lg" aria-label="NIMPA home">
             <Logo />
           </Link>
           <nav aria-label="Main" className="hidden flex-1 items-center justify-center gap-0.5 xl:flex">
@@ -156,7 +156,7 @@ export function SiteHeader() {
                   <Link to="/login">Login</Link>
                 </Button>
                 <Button asChild>
-                  <Link to="/join">Join NIPAM</Link>
+                  <Link to="/join">Join NIMPA</Link>
                 </Button>
               </div>
             )}
@@ -205,7 +205,7 @@ export function SiteHeader() {
           {!user && (
             <div className="grid gap-2 border-t border-border p-4 pb-safe">
               <Button asChild size="lg">
-                <Link to="/join">Join NIPAM</Link>
+                <Link to="/join">Join NIMPA</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/login">Login</Link>

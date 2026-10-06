@@ -117,7 +117,7 @@ export default function DiscussionDetail() {
         <div className={cn("rounded-2xl px-4 py-3", c.status === "visible" ? "bg-surface" : "bg-slate-50 italic text-slate-400")}>
           <p className="text-sm">
             <span className="font-semibold text-navy">{c.author.name}</span>
-            {c.author.is_team && <span className="ml-1.5 text-xs font-semibold text-green-600">NIPAM Team</span>}
+            {c.author.is_team && <span className="ml-1.5 text-xs font-semibold text-green-600">NIMPA Team</span>}
             <span className="ml-2 text-xs text-slate-500">{timeAgo(c.created_at)}</span>
           </p>
           <p className="mt-1 whitespace-pre-line break-words text-[15px] text-slate-700">{c.body}</p>
@@ -179,7 +179,7 @@ export default function DiscussionDetail() {
           <Avatar name={d.author.name} team={d.author.is_team} />
           <p className="text-sm">
             <span className="font-semibold text-navy">{d.author.name}</span>
-            {d.author.is_team && <span className="ml-1.5 text-xs font-semibold text-green-600">NIPAM Team</span>}
+            {d.author.is_team && <span className="ml-1.5 text-xs font-semibold text-green-600">NIMPA Team</span>}
             <span className="block text-xs text-slate-500">{timeAgo(d.created_at)}</span>
           </p>
         </div>
@@ -218,7 +218,7 @@ export default function DiscussionDetail() {
             <p className="rounded-xl bg-surface p-4 text-sm text-muted-foreground">This discussion is closed to new comments.</p>
           ) : !user ? (
             <p className="rounded-xl bg-surface p-4 text-sm text-muted-foreground">
-              <Link to={`/login?next=${encodeURIComponent(location.pathname)}`} className="font-semibold text-green-600">Log in</Link> or <Link to="/join" className="font-semibold text-green-600">join NIPAM</Link> to comment.
+              <Link to={`/login?next=${encodeURIComponent(location.pathname)}`} className="font-semibold text-green-600">Log in</Link> or <Link to="/join" className="font-semibold text-green-600">join NIMPA</Link> to comment.
             </p>
           ) : (
             <p className="rounded-xl bg-surface p-4 text-sm text-muted-foreground">

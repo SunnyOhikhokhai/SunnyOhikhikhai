@@ -15,7 +15,7 @@ export default function NotFound() {
       <p className="mt-3 max-w-md text-muted-foreground">The link may be out of date, or the content may have been moved or unpublished.</p>
       <div className="mt-8 flex gap-3">
         <Button asChild><Link to="/">Back to home</Link></Button>
-        <Button asChild variant="outline"><Link to="/search">Search NIPAM</Link></Button>
+        <Button asChild variant="outline"><Link to="/search">Search NIMPA</Link></Button>
       </div>
     </section>
   );

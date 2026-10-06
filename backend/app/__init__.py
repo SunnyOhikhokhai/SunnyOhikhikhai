@@ -1,1 +1,1 @@
-"""NIPAM platform API."""
+"""NIMPA platform API."""

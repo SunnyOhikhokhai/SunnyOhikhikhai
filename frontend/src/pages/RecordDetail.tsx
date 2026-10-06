@@ -46,7 +46,7 @@ export default function RecordDetail() {
         description={r.summary}
         image={r.images[0]?.url}
         type="article"
-        jsonLd={{ "@context": "https://schema.org", "@type": "Article", headline: r.title, datePublished: r.published_at, dateModified: r.updated_at, publisher: { "@type": "Organization", name: "NIPAM" } }}
+        jsonLd={{ "@context": "https://schema.org", "@type": "Article", headline: r.title, datePublished: r.published_at, dateModified: r.updated_at, publisher: { "@type": "Organization", name: "NIMPA" } }}
       />
       <div className="border-b border-border bg-surface">
         <div className="container max-w-5xl py-10 sm:py-14">
@@ -186,7 +186,7 @@ export default function RecordDetail() {
           </div>
 
           <p className="text-xs leading-relaxed text-slate-500">
-            Spotted an error? <Link to="/contact" className="font-semibold text-green-600 hover:underline">Tell us</Link> — corrections are reviewed by the NIPAM team.
+            Spotted an error? <Link to="/contact" className="font-semibold text-green-600 hover:underline">Tell us</Link> — corrections are reviewed by the NIMPA team.
           </p>
         </aside>
       </div>

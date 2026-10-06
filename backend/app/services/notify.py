@@ -72,9 +72,9 @@ def notify_users(
             db.add(Notification(user_id=u.id, type=ntype, title=title, body=body, link=link))
             count += 1
         if _wants(prefs, email_attr) and u.email_verified_at:
-            out.emails.append((u.email, f"NIPAM: {title}", f"{body}\n\nManage your notification preferences in your NIPAM account settings."))
+            out.emails.append((u.email, f"NIMPA: {title}", f"{body}\n\nManage your notification preferences in your NIMPA account settings."))
         if _wants(prefs, sms_attr) and u.phone and u.phone_verified_at:
-            out.sms.append((u.phone, f"NIPAM: {title}"[:300]))
+            out.sms.append((u.phone, f"NIMPA: {title}"[:300]))
         if _wants(prefs, whatsapp_attr) and u.phone and u.phone_verified_at:
             text = f"{title}\n\n{body}" if body else title
             out.whatsapp.append((u.phone, text[:900]))

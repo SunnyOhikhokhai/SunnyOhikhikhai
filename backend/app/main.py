@@ -21,7 +21,7 @@ from .routers import admin, auth, community, content, notifications, public, use
 log = logging.getLogger("nipam")
 settings = get_settings()
 
-# Show NIPAM's own messages (including the console email/SMS/WhatsApp
+# Show NIMPA's own messages (including the console email/SMS/WhatsApp
 # providers used in development) in the server window.
 if not log.handlers:
     _handler = logging.StreamHandler()
@@ -68,9 +68,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(
-    title="NIPAM API",
+    title="NIMPA API",
     version="1.0.0",
-    description="Non-Indigenes for Philip Aduda Movement — community platform API.",
+    description="Non-Indigenous Movement for Philip Aduda — community platform API.",
     lifespan=lifespan,
     docs_url=None if settings.is_production else "/api/docs",
     redoc_url=None,

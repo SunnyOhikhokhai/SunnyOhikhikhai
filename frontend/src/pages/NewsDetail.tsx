@@ -36,7 +36,7 @@ export default function NewsDetail() {
         description={n.excerpt}
         image={n.image_url}
         type="article"
-        jsonLd={{ "@context": "https://schema.org", "@type": "NewsArticle", headline: n.title, datePublished: n.published_at, dateModified: n.updated_at, author: { "@type": "Organization", name: n.author_name }, publisher: { "@type": "Organization", name: "NIPAM" } }}
+        jsonLd={{ "@context": "https://schema.org", "@type": "NewsArticle", headline: n.title, datePublished: n.published_at, dateModified: n.updated_at, author: { "@type": "Organization", name: n.author_name }, publisher: { "@type": "Organization", name: "NIMPA" } }}
       />
       <header className="container max-w-3xl pb-8 pt-10 sm:pt-14">
         <Link to="/news" className="inline-flex items-center gap-1.5 text-sm font-semibold text-green-600 hover:gap-2.5">

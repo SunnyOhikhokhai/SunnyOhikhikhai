@@ -1,4 +1,4 @@
-"""Relational schema for the NIPAM platform.
+"""Relational schema for the NIMPA platform.
 
 Conventions:
 - Integer surrogate primary keys, explicit foreign keys and indexes.
@@ -501,7 +501,7 @@ class News(TimestampMixin, SoftDeleteMixin, Base):
     verification_status: Mapped[str | None] = mapped_column(String(20), index=True)
     image_url: Mapped[str | None] = mapped_column(String(500))
     image_alt: Mapped[str | None] = mapped_column(String(300))
-    author_name: Mapped[str] = mapped_column(String(120), default="NIPAM Editorial Team")
+    author_name: Mapped[str] = mapped_column(String(120), default="NIMPA Editorial Team")
     status: Mapped[str] = mapped_column(String(20), default="draft")  # draft | published
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False)
     is_featured: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -550,7 +550,7 @@ class Event(TimestampMixin, SoftDeleteMixin, Base):
     location: Mapped[str] = mapped_column(String(200))
     area_council_id: Mapped[int | None] = mapped_column(ForeignKey("area_councils.id", ondelete="SET NULL"), index=True)
     image_url: Mapped[str | None] = mapped_column(String(500))
-    organizer: Mapped[str] = mapped_column(String(160), default="NIPAM")
+    organizer: Mapped[str] = mapped_column(String(160), default="NIMPA")
     registration_open: Mapped[bool] = mapped_column(Boolean, default=True)
     capacity: Mapped[int | None] = mapped_column(Integer)
     status: Mapped[str] = mapped_column(String(20), default="draft")  # draft | published | cancelled | archived

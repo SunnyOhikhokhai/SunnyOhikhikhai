@@ -122,7 +122,7 @@ export default function Events() {
 
   return (
     <>
-      <Seo title="Events" description="Upcoming and past NIPAM events across the six Area Councils of the FCT." />
+      <Seo title="Events" description="Upcoming and past NIMPA events across the six Area Councils of the FCT." />
       <PageHeader eyebrow="Events" title="Events & gatherings" description="Town halls, forums and community activities across the FCT. Register to secure your place." crumbs={[{ to: "/", label: "Home" }, { label: "Events" }]} />
       <div className="container py-8">
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -49,7 +49,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="top-[10%] max-w-2xl translate-y-0 p-0 sm:top-[12%]" aria-describedby={undefined}>
-        <DialogTitle className="sr-only">Search NIPAM</DialogTitle>
+        <DialogTitle className="sr-only">Search NIMPA</DialogTitle>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -72,7 +72,7 @@ export function GlobalSearch({ open, onOpenChange }: { open: boolean; onOpenChan
         </form>
         <div className="max-h-[60dvh] overflow-y-auto p-2">
           {q.trim().length < 2 ? (
-            <p className="px-4 py-8 text-center text-sm text-muted-foreground">Type at least two characters to search across NIPAM.</p>
+            <p className="px-4 py-8 text-center text-sm text-muted-foreground">Type at least two characters to search across NIMPA.</p>
           ) : data && total === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-muted-foreground">
               No results for “{q}”. Try a different word, or browse <Link to="/our-record" onClick={() => onOpenChange(false)} className="font-semibold text-green-600">Our Record</Link>.

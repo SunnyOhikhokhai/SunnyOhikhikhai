@@ -106,7 +106,7 @@ PROJECT_CATEGORIES = [
 ]
 
 NEWS_CATEGORIES = [
-    "NIPAM Updates",
+    "NIMPA Updates",
     "Community News",
     "FCT News",
     "Events",
@@ -122,7 +122,7 @@ DISCUSSION_CATEGORIES = [
     ("FCT Community", "Conversations about life and community across the Territory."),
     ("Area Council", "Local conversations for each of the six Area Councils."),
     ("Development", "Infrastructure, services and development in the FCT."),
-    ("Events", "Discuss upcoming and past NIPAM events."),
+    ("Events", "Discuss upcoming and past NIMPA events."),
     ("Ideas", "Constructive suggestions for the community and the platform."),
     ("General Discussion", "Anything else, within the community guidelines."),
 ]
@@ -165,7 +165,7 @@ def seed_reference(db: Session) -> None:
                         f"{name} is one of the six Area Councils of the Federal Capital Territory. "
                         "This page brings together community updates, events, public information and "
                         "documented records relating to the council area.\n\n"
-                        "Council profile information is maintained by NIPAM administrators. "
+                        "Council profile information is maintained by NIMPA administrators. "
                         "Detailed council facts will be added once verified."
                     ),
                     sort_order=i,
@@ -177,7 +177,8 @@ def seed_reference(db: Session) -> None:
         if not db.scalar(select(ProjectCategory).where(ProjectCategory.slug == slug)):
             db.add(ProjectCategory(slug=slug, name=name, sort_order=i))
     for i, name in enumerate(NEWS_CATEGORIES):
-        slug = _slug(name)
+        # The updates category keeps its original address from before the rename to NIMPA.
+        slug = "nipam-updates" if name == "NIMPA Updates" else _slug(name)
         if not db.scalar(select(NewsCategory).where(NewsCategory.slug == slug)):
             db.add(NewsCategory(slug=slug, name=name, sort_order=i))
     for i, (name, desc) in enumerate(DISCUSSION_CATEGORIES):
@@ -193,8 +194,8 @@ def seed_reference(db: Session) -> None:
                 title="[OFFICIAL TITLE TO BE CONFIRMED]",
                 tagline="[OFFICIAL TAGLINE TO BE ADDED]",
                 summary=(
-                    "NIPAM is a support movement for Sen. Philip Aduda. His verified biography, "
-                    "career milestones and photographs will appear here once supplied by the NIPAM team. "
+                    "NIMPA is a support movement for Sen. Philip Aduda. His verified biography, "
+                    "career milestones and photographs will appear here once supplied by the NIMPA team. "
                     "[VERIFIED BIOGRAPHY TO BE ADDED]"
                 ),
                 biography=(
@@ -234,7 +235,7 @@ def _make_user(db: Session, email: str, password: str, name: str, council_slug: 
 
 def seed_admin(db: Session) -> User:
     s = get_settings()
-    u = _make_user(db, s.seed_admin_email, s.seed_admin_password, "NIPAM Administrator", "amac", "NIPAM Team")
+    u = _make_user(db, s.seed_admin_email, s.seed_admin_password, "NIMPA Administrator", "amac", "NIMPA Team")
     role = db.scalar(select(Role).where(Role.code == "super_admin"))
     if not db.scalar(select(AdminUser).where(AdminUser.user_id == u.id)):
         db.add(AdminUser(user_id=u.id, role_id=role.id))
@@ -287,12 +288,12 @@ def seed_demo(db: Session, admin: User) -> None:
 
     news = [
         (
-            "Welcome to the NIPAM community platform",
+            "Welcome to the NIMPA community platform",
             "nipam-updates",
             None,
             "announcement",
-            "NIPAM's digital home connects residents and members across the six Area Councils of the FCT.",
-            "NIPAM's new platform brings members and residents together in one place.\n\n"
+            "NIMPA's digital home connects residents and members across the six Area Councils of the FCT.",
+            "NIMPA's new platform brings members and residents together in one place.\n\n"
             "## What you can do here\n\n"
             "- **Join** and choose the Area Council you live in\n"
             "- Follow **news, announcements and events** across the FCT\n"
@@ -361,7 +362,7 @@ def seed_demo(db: Session, admin: User) -> None:
                 category_id=ncats[cat].id,
                 area_council_id=councils[council].id if council else None,
                 content_label=label,
-                author_name="NIPAM Editorial Team",
+                author_name="NIMPA Editorial Team",
                 status="published",
                 is_demo=True,
                 is_featured=i == 0,
@@ -384,7 +385,7 @@ def seed_demo(db: Session, admin: User) -> None:
             Event(
                 slug=_slug(f"sample {title} {council}"),
                 title=f"[Sample] {title} — {councils[council].short_name}",
-                summary="Sample event showing how NIPAM events are listed. Details to be confirmed.",
+                summary="Sample event showing how NIMPA events are listed. Details to be confirmed.",
                 description=(
                     "This is a **sample event** for demonstration. Date, venue and programme are placeholders.\n\n"
                     "[EVENT DETAILS TO BE CONFIRMED]"
@@ -393,7 +394,7 @@ def seed_demo(db: Session, admin: User) -> None:
                 ends_at=start + timedelta(hours=3),
                 location=f"[Venue to be confirmed], {councils[council].short_name}",
                 area_council_id=councils[council].id,
-                organizer="NIPAM",
+                organizer="NIMPA",
                 registration_open=open_,
                 capacity=150,
                 status="published",
@@ -422,7 +423,7 @@ def seed_demo(db: Session, admin: User) -> None:
             Discussion(
                 title="Welcome — introduce yourself and your Area Council",
                 body=(
-                    "Welcome to the NIPAM community. Tell us which Area Council you live in and what you "
+                    "Welcome to the NIMPA community. Tell us which Area Council you live in and what you "
                     "hope to see on the platform. Please read the community guidelines before posting."
                 ),
                 category_id=dcats["fct-community"].id,
@@ -454,7 +455,7 @@ def main() -> None:
     parser.add_argument("--demo", action="store_true", help="add clearly-labelled sample content")
     parser.add_argument(
         "--content-pack", "--aduda", dest="content_pack", action="store_true",
-        help="import the NIPAM Master Content Pack (profile, projects, legislation, elections, news, sources)",
+        help="import the NIMPA Master Content Pack (profile, projects, legislation, elections, news, sources)",
     )
     parser.add_argument("--create-tables", action="store_true", help="create or upgrade tables (runs the migrations)")
     args = parser.parse_args()

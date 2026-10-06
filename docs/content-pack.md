@@ -1,6 +1,6 @@
 # Content pack import
 
-The site's factual content comes from the **NIPAM Master Content Pack v1.0** (research date 4 October 2026), kept in [`NIPAM_MASTER_CONTENT_PACK.md`](NIPAM_MASTER_CONTENT_PACK.md). `backend/app/content_pack.py` turns it into database records:
+The site's factual content comes from the **NIMPA Master Content Pack v1.0** (research date 4 October 2026), kept in [`NIPAM_MASTER_CONTENT_PACK.md`](NIPAM_MASTER_CONTENT_PACK.md). `backend/app/content_pack.py` turns it into database records:
 
 | Content | Where it appears | Count |
 |---|---|---|

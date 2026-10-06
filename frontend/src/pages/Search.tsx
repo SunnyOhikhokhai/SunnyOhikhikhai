@@ -48,7 +48,7 @@ export default function SearchPage() {
   return (
     <>
       <Seo title={q ? `Search: ${q}` : "Search"} noindex />
-      <PageHeader eyebrow="Search" title="Search NIPAM" crumbs={[{ to: "/", label: "Home" }, { label: "Search" }]}>
+      <PageHeader eyebrow="Search" title="Search NIMPA" crumbs={[{ to: "/", label: "Home" }, { label: "Search" }]}>
         <div className="relative mt-8 max-w-2xl">
           <SearchIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400" />
           <Input autoFocus type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search projects, legislation, news, events, councils and discussions" className="h-14 pl-12 text-base" aria-label="Search" />

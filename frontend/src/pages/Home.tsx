@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SkylineArt } from "@/components/brand/Artwork";
+import { FULL_NAME, FullLogo, TAGLINE } from "@/components/brand/Logo";
 import { Portrait } from "@/components/brand/Portrait";
 import { CouncilCard, DiscussionRow, EventCard, NewsCard, RecordCard } from "@/components/shared/cards";
 import { FeaturedCarousel } from "@/components/shared/FeaturedCarousel";
@@ -84,15 +85,16 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 opacity-90">
         <SkylineArt className="h-40 w-full sm:h-56 lg:h-64" />
       </div>
-      <div className="container pb-44 pt-14 sm:pb-60 sm:pt-20 lg:pb-64 lg:pt-24">
+      <div className="container grid items-center gap-10 pb-44 pt-14 sm:pb-60 sm:pt-20 lg:grid-cols-[1fr_auto] lg:pb-64 lg:pt-24">
         <div className="max-w-3xl animate-fade-up">
           <p className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-green-200 ring-1 ring-white/15 backdrop-blur">
-            <span className="size-1.5 rounded-full bg-green-400" /> Federal Capital Territory · Nigeria
+            <span className="size-1.5 rounded-full bg-green-400" /> {TAGLINE}
           </p>
           <h1 className="mt-6 font-display text-6xl font-extrabold tracking-[0.04em] text-white sm:text-7xl lg:text-8xl">
-            NIP<span className="text-green-400">A</span>M
+            NIMP<span className="text-green-400">A</span>
           </h1>
-          <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">Non-Indigenes for Philip Aduda Movement</p>
+          <p className="mt-3 font-display text-xl font-semibold text-navy-100 sm:text-2xl">{FULL_NAME}</p>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-navy-200">People · Progress · Opportunities · Stronger FCT</p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-navy-100 sm:text-lg">
             A digital community for information, public records, community participation and civic engagement across the Federal Capital
             Territory.
@@ -122,6 +124,7 @@ function Hero({ stats }: { stats?: HomeData["stats"] }) {
             ))}
           </dl>
         </div>
+        <FullLogo onDark className="hidden w-[22rem] shadow-lift lg:block xl:w-[26rem]" />
       </div>
     </section>
   );
@@ -137,8 +140,8 @@ export default function Home() {
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "NIPAM",
-          alternateName: "Non-Indigenes for Philip Aduda Movement",
+          name: "NIMPA",
+          alternateName: "Non-Indigenous Movement for Philip Aduda",
           url: window.location.origin,
           logo: `${window.location.origin}/icons/icon-512.png`,
           areaServed: "Federal Capital Territory, Nigeria",
@@ -267,12 +270,12 @@ export default function Home() {
         <div className="container">
           <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
             <div>
-              <p className="eyebrow mb-3">About NIPAM</p>
+              <p className="eyebrow mb-3">About NIMPA</p>
               <h2 id="about-heading" className="text-3xl font-extrabold sm:text-4xl">
                 One movement for Sen. Philip Aduda, across the FCT
               </h2>
               <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-                NIPAM — Non-Indigenes for Philip Aduda Movement — brings together residents and voluntary supporters across the Federal Capital
+                NIMPA — Non-Indigenous Movement for Philip Aduda — brings together residents and voluntary supporters across the Federal Capital
                 Territory to spread his name, share his record of service and keep every community informed and engaged.
               </p>
               <ul className="mt-6 space-y-3 text-[15px] text-slate-700">
@@ -288,7 +291,7 @@ export default function Home() {
               </ul>
               <Button asChild variant="outline" className="mt-8">
                 <Link to="/about">
-                  Learn more about NIPAM <ArrowRight />
+                  Learn more about NIMPA <ArrowRight />
                 </Link>
               </Button>
             </div>
@@ -483,7 +486,7 @@ export default function Home() {
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                 <Button asChild size="lg">
                   <Link to="/join">
-                    Join NIPAM <ArrowRight />
+                    Join NIMPA <ArrowRight />
                   </Link>
                 </Button>
                 <Button asChild size="lg" variant="outline-light">
