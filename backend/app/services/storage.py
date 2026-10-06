@@ -3,12 +3,17 @@
 ``local`` writes to NIPAM_UPLOAD_DIR (served at /uploads in development; serve
 from a CDN/object store in production). ``s3`` uses any S3-compatible store
 (AWS S3, Cloudflare R2, DigitalOcean Spaces) and requires boto3.
+``vercel_blob`` uses Vercel Blob with the BLOB_READ_WRITE_TOKEN that Vercel
+adds when a Blob store is connected to the project.
 """
 
 from __future__ import annotations
 
+import os
 import secrets
 from pathlib import Path
+
+import httpx
 
 from ..config import get_settings
 from ..errors import ApiError
@@ -41,7 +46,9 @@ def store_upload(data: bytes, folder: str) -> dict:
     ext, mime = detect_type(data)
     key = f"{folder}/{secrets.token_hex(16)}.{ext}"
 
-    if s.storage_backend == "s3":  # pragma: no cover - requires credentials
+    if s.storage_backend == "vercel_blob":
+        url = _put_vercel_blob(key, data, mime)
+    elif s.storage_backend == "s3":  # pragma: no cover - requires credentials
         import boto3
 
         client = boto3.client("s3", region_name=s.s3_region or None, endpoint_url=s.s3_endpoint_url or None)
@@ -53,3 +60,24 @@ def store_upload(data: bytes, folder: str) -> dict:
         path.write_bytes(data)
         url = f"{s.upload_public_url.rstrip('/')}/{key}"
     return {"url": url, "content_type": mime, "size": len(data), "kind": "document" if ext == "pdf" else "image"}
+
+
+def _put_vercel_blob(key: str, data: bytes, mime: str) -> str:
+    token = os.environ.get("BLOB_READ_WRITE_TOKEN", "")
+    if not token:
+        raise ApiError(503, "storage_unavailable", "File storage is not configured. Connect a Vercel Blob store to the project.")
+    r = httpx.put(
+        f"https://blob.vercel-storage.com/{key}",
+        content=data,
+        headers={
+            "authorization": f"Bearer {token}",
+            "x-api-version": "7",
+            "x-content-type": mime,
+            "x-add-random-suffix": "0",
+            "x-cache-control-max-age": "31536000",
+        },
+        timeout=30,
+    )
+    if r.status_code >= 400:
+        raise ApiError(502, "storage_failed", "The file could not be stored. Please try again.")
+    return r.json()["url"]

@@ -1,0 +1,2 @@
+# Python packages for the Vercel deployment (the backend's own list).
+-r backend/requirements.txt

@@ -1,6 +1,21 @@
+import os
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+ON_VERCEL = bool(os.environ.get("VERCEL"))
+
+
+def _platform_database_url() -> str | None:
+    """Database URL provided by a hosting integration (e.g. Neon on Vercel)."""
+    for key in ("DATABASE_URL", "POSTGRES_URL"):
+        url = os.environ.get(key)
+        if url:
+            for prefix in ("postgres://", "postgresql://"):
+                if url.startswith(prefix):
+                    return "postgresql+psycopg://" + url[len(prefix) :]
+            return url
+    return None
 
 
 class Settings(BaseSettings):
@@ -52,7 +67,7 @@ class Settings(BaseSettings):
     whatsapp_api_version: str = "v21.0"
 
     # Storage
-    storage_backend: str = "local"  # local | s3
+    storage_backend: str = "local"  # local | s3 | vercel_blob
     upload_dir: str = "./uploads"
     upload_public_url: str = "/uploads"
     max_upload_mb: int = 5
@@ -67,6 +82,9 @@ class Settings(BaseSettings):
     # Seed
     seed_admin_email: str = "admin@nipam.local"
     seed_admin_password: str = "ChangeMe!Admin2026"
+    # Create/upgrade the database and import the content pack on first use
+    # (for hosts without a separate setup step, such as Vercel).
+    auto_setup: bool = ON_VERCEL
 
     @property
     def is_production(self) -> bool:
@@ -84,6 +102,24 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     s = Settings()
+    if ON_VERCEL:
+        # Vercel supplies the database and file storage; its filesystem is read-only.
+        if "database_url" not in s.model_fields_set and (url := _platform_database_url()):
+            s.database_url = url
+        if "upload_dir" not in s.model_fields_set:
+            s.upload_dir = "/tmp/uploads"
+        if "storage_backend" not in s.model_fields_set and os.environ.get("BLOB_READ_WRITE_TOKEN"):
+            s.storage_backend = "vercel_blob"
+        host = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL") or os.environ.get("VERCEL_URL")
+        if host and "public_base_url" not in s.model_fields_set:
+            s.public_base_url = f"https://{host}"
+        if "cookie_secure" not in s.model_fields_set:
+            s.cookie_secure = True
+        # A public deployment always needs a real secret and a non-default admin password.
+        if s.secret_key.startswith("dev-") or len(s.secret_key) < 32:
+            raise RuntimeError("Set NIPAM_SECRET_KEY to a long random value in the Vercel project settings")
+        if s.seed_admin_password == "ChangeMe!Admin2026" or s.seed_admin_email.endswith("@nipam.local"):
+            raise RuntimeError("Set NIPAM_SEED_ADMIN_EMAIL and NIPAM_SEED_ADMIN_PASSWORD in the Vercel project settings")
     if s.is_production:
         if s.secret_key.startswith("dev-") or len(s.secret_key) < 32:
             raise RuntimeError("NIPAM_SECRET_KEY must be set to a strong value in production")
