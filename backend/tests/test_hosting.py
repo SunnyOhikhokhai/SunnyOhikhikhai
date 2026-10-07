@@ -1,3 +1,5 @@
+import os
+
 import httpx
 import pytest
 
@@ -12,6 +14,14 @@ def test_platform_database_url_is_converted(monkeypatch):
     assert _platform_database_url() == "postgresql+psycopg://u:p@host/db?sslmode=require"
     monkeypatch.setenv("DATABASE_URL", "postgresql://a:b@h/d")
     assert _platform_database_url() == "postgresql+psycopg://a:b@h/d"
+
+
+def test_platform_database_url_with_custom_prefix(monkeypatch):
+    for k in ("DATABASE_URL", "POSTGRES_URL"):
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv("NIMPA_DB_URL_UNPOOLED", "postgresql://direct@h/d")
+    monkeypatch.setenv("NIMPA_DB_URL", "postgresql://pooled@h/d")
+    assert _platform_database_url() == "postgresql+psycopg://pooled@h/d"
 
 
 def _vercel_settings(monkeypatch, **env):
@@ -48,6 +58,19 @@ def test_vercel_refuses_default_secrets(monkeypatch):
         _vercel_settings(monkeypatch, NIPAM_SECRET_KEY="dev-insecure-change-me")
     with pytest.raises(RuntimeError, match="NIPAM_SEED_ADMIN"):
         _vercel_settings(monkeypatch, NIPAM_SECRET_KEY="y" * 40, NIPAM_SEED_ADMIN_EMAIL="admin@nipam.local")
+
+
+def test_vercel_requires_a_database(monkeypatch):
+    for k in list(os.environ):
+        if k.endswith("_URL"):
+            monkeypatch.delenv(k)
+    with pytest.raises(RuntimeError, match="No database is connected"):
+        _vercel_settings(
+            monkeypatch,
+            NIPAM_SECRET_KEY="z" * 40,
+            NIPAM_SEED_ADMIN_EMAIL="owner@example.org",
+            NIPAM_SEED_ADMIN_PASSWORD="Str0ng!Owner-Pass",
+        )
 
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"0" * 64
