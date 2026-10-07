@@ -6,12 +6,24 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 ON_VERCEL = bool(os.environ.get("VERCEL"))
 
 
+_POSTGRES_SCHEMES = ("postgres://", "postgresql://")
+
+
 def _platform_database_url() -> str | None:
-    """Database URL provided by a hosting integration (e.g. Neon on Vercel)."""
-    for key in ("DATABASE_URL", "POSTGRES_URL"):
-        url = os.environ.get(key)
+    """Database URL provided by a hosting integration (e.g. Neon on Vercel).
+
+    The integration may add a custom prefix to its variable names, so after the
+    usual names any variable holding a Postgres URL is accepted, preferring
+    pooled connections."""
+    candidates = [os.environ.get(k) for k in ("DATABASE_URL", "POSTGRES_URL")]
+    others = sorted(
+        (k for k, v in os.environ.items() if k.endswith("_URL") and v.startswith(_POSTGRES_SCHEMES)),
+        key=lambda k: ("UNPOOLED" in k or "NON_POOLING" in k, k),
+    )
+    candidates += [os.environ[k] for k in others]
+    for url in candidates:
         if url:
-            for prefix in ("postgres://", "postgresql://"):
+            for prefix in _POSTGRES_SCHEMES:
                 if url.startswith(prefix):
                     return "postgresql+psycopg://" + url[len(prefix) :]
             return url
@@ -120,6 +132,11 @@ def get_settings() -> Settings:
             raise RuntimeError("Set NIPAM_SECRET_KEY to a long random value in the Vercel project settings")
         if s.seed_admin_password == "ChangeMe!Admin2026" or s.seed_admin_email.endswith("@nipam.local"):
             raise RuntimeError("Set NIPAM_SEED_ADMIN_EMAIL and NIPAM_SEED_ADMIN_PASSWORD in the Vercel project settings")
+        if s.database_url.startswith("sqlite"):
+            raise RuntimeError(
+                "No database is connected: add a Postgres database (Storage → Neon) to the Vercel project "
+                "so DATABASE_URL is set, then redeploy"
+            )
     if s.is_production:
         if s.secret_key.startswith("dev-") or len(s.secret_key) < 32:
             raise RuntimeError("NIPAM_SECRET_KEY must be set to a strong value in production")
