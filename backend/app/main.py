@@ -74,11 +74,15 @@ def ensure_setup() -> None:
 
     tables = set(inspect(engine).get_table_names())
     migrate()
+    from .seed import seed_admin, seed_reference
+
     with SessionLocal() as db:
         if "sources" in tables and db.scalar(select(Source.id).limit(1)):
+            # Recreate the Super Admin if the configured address has no account yet
+            # (e.g. NIPAM_SEED_ADMIN_EMAIL was corrected after the first setup).
+            seed_admin(db)
             return
         from .content_pack import apply
-        from .seed import seed_admin, seed_reference
 
         seed_reference(db)
         seed_admin(db)

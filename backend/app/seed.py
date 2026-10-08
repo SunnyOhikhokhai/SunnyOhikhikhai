@@ -14,7 +14,7 @@ from __future__ import annotations
 import argparse
 from datetime import timedelta
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .config import get_settings
@@ -219,8 +219,10 @@ def seed_reference(db: Session) -> None:
 
 
 def _make_user(db: Session, email: str, password: str, name: str, council_slug: str, display: str | None = None) -> User:
-    u = db.scalar(select(User).where(User.email == email))
+    email = email.strip().lower()  # login looks accounts up by the lower-cased address
+    u = db.scalar(select(User).where(func.lower(func.trim(User.email)) == email))
     if u:
+        u.email = email
         return u
     council = db.scalar(select(AreaCouncil).where(AreaCouncil.slug == council_slug))
     now = utcnow()

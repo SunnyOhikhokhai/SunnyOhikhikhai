@@ -110,6 +110,19 @@ def test_first_use_setup_is_idempotent(api):
     assert api.get("/api/projects", params={"page_size": 100}).json()["meta"]["total"] == len(PROJECTS)
 
 
+def test_seed_admin_email_is_normalised(api, monkeypatch):
+    from app.main import ensure_setup
+
+    settings = get_settings()
+    monkeypatch.setattr(settings, "seed_admin_email", "  Owner@Example.ORG ")
+    monkeypatch.setattr(settings, "seed_admin_password", "Str0ng!Owner-Pass")
+    ensure_setup()  # first run imports content; the admin is (re)created on every cold start
+    ensure_setup()
+    r = api.post("/api/auth/login", {"identifier": "owner@example.org", "password": "Str0ng!Owner-Pass"})
+    assert r.status_code == 200, r.text
+    assert api.get("/api/admin/stats").status_code == 200
+
+
 def test_vercel_requirements_match_backend():
     from pathlib import Path
 
