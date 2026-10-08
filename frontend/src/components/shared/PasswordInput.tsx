@@ -7,7 +7,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, React.InputHTMLAttribu
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
-      <Input ref={ref} type={show ? "text" : "password"} className={cn("pr-11", className)} {...props} />
+      <Input ref={ref} type={show ? "text" : "password"} autoCapitalize="none" autoCorrect="off" spellCheck={false} className={cn("pr-11", className)} {...props} />
       <button type="button" onClick={() => setShow((s) => !s)} className="absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:text-navy" aria-label={show ? "Hide password" : "Show password"}>
         {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
       </button>
