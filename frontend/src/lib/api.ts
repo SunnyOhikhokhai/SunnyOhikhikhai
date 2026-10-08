@@ -24,12 +24,23 @@ function readCookie(name: string) {
     ?.split("=")[1];
 }
 
+const OFFLINE = "Couldn't reach NIMPA. Check your connection and try again.";
+
 let csrfPromise: Promise<void> | null = null;
 async function ensureCsrf() {
   if (readCookie("nipam_csrf")) return;
-  csrfPromise ??= fetch("/api/auth/csrf", { credentials: "include" }).then(() => undefined);
-  await csrfPromise;
-  csrfPromise = null;
+  // Shared by concurrent requests, and cleared even when it fails so a brief
+  // network drop doesn't break every later request until the page is reloaded.
+  csrfPromise ??= fetch("/api/auth/csrf", { credentials: "include" })
+    .then(() => undefined)
+    .finally(() => {
+      csrfPromise = null;
+    });
+  try {
+    await csrfPromise;
+  } catch {
+    throw new ApiError(0, "network_error", OFFLINE);
+  }
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>;
@@ -61,7 +72,7 @@ async function request<T>(method: string, url: string, body?: unknown, raw = fal
   try {
     res = await fetch(url, { method, headers, body: payload, credentials: "include" });
   } catch {
-    throw new ApiError(0, "network_error", "You appear to be offline. Check your connection and try again.");
+    throw new ApiError(0, "network_error", OFFLINE);
   }
   if (raw && res.ok) return res as unknown as T;
   const json = await res.json().catch(() => ({}));
