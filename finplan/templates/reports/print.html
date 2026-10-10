@@ -1,0 +1,42 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ project.name }} report · FINPLAN</title>
+  <link rel="icon" type="image/png" href="{% static 'images/finplan-icon.png' %}">
+  <link rel="stylesheet" href="{% static 'css/finplan.css' %}">
+</head>
+<body class="print-page">
+  <div class="print-toolbar no-print">
+    <a href="{% url 'projects:detail' project.pk %}" class="btn btn-ghost">Back to results</a>
+    <button type="button" class="btn btn-primary" data-print>Print this report</button>
+    <a href="{% url 'reports:pdf' project.pk %}" class="btn btn-secondary">Download PDF</a>
+  </div>
+  <main class="print-sheet" id="main">
+    <header class="print-header">
+      <img src="{% static 'images/finplan-logo.png' %}" alt="FINPLAN" class="print-logo">
+      <div>
+        <h1>{{ project.name }}</h1>
+        <p class="muted">{{ spec.label }}</p>
+      </div>
+    </header>
+    <dl class="print-meta">
+      <div><dt>Currency</dt><dd>{{ project.currency }}</dd></div>
+      <div><dt>Report date</dt><dd>{{ generated|date:"j F Y, H:i" }}</dd></div>
+      <div><dt>Inputs last saved</dt><dd>{{ project.updated_at|date:"j F Y, H:i" }}</dd></div>
+      <div><dt>Prepared for</dt><dd>{{ project.owner.get_full_name|default:project.owner.username }}</dd></div>
+    </dl>
+    {% if error %}
+      <div class="alert alert-error"><p>{{ error }}</p></div>
+    {% else %}
+      {% include "reports/_report_body.html" %}
+    {% endif %}
+    <section class="disclaimer-box">
+      <h2>Disclaimer</h2>
+      <p>{{ disclaimer }}</p>
+    </section>
+  </main>
+  <script src="{% static 'js/finplan.js' %}" defer></script>
+</body>
+</html>

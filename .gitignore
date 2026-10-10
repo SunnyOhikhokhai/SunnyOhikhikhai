@@ -17,3 +17,7 @@ frontend/dev-dist/
 .env.local
 e2e-screens/
 *.tsbuildinfo
+
+# FINPLAN
+finplan/db.sqlite3
+finplan/staticfiles/

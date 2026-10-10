@@ -1,0 +1,12 @@
+<ul class="project-list">
+  {% for project in projects %}
+  <li class="project-row">
+    <span class="model-icon model-icon-sm model-icon-{{ project.model_type }}">{% include "partials/icon.html" with name=project.model_type %}</span>
+    <div class="project-row-main">
+      <a href="{{ project.get_absolute_url }}" class="project-row-name">{{ project.name }}</a>
+      <p class="muted small">{{ project.get_model_type_display }} · {{ project.currency }} · Updated {{ project.updated_at|date:"j M Y, H:i" }}</p>
+    </div>
+    <span class="badge {% if project.is_draft %}badge-draft{% else %}badge-done{% endif %}">{{ project.get_status_display }}</span>
+  </li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,12 @@
+<div class="table-wrap" tabindex="0" role="region" aria-label="{{ table.title }}">
+  <table class="data-table">
+    <thead><tr>{% for col in table.columns %}<th scope="col"{% if not forloop.first %} class="num"{% endif %}>{{ col }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for row, row_tone in table.styled_rows %}
+      <tr class="{% if table.total_row and forloop.last %}total-row{% endif %}{% if row_tone == 'negative' %} row-negative{% endif %}">
+        {% for cell in row %}{% if forloop.first %}<th scope="row">{{ cell }}</th>{% else %}<td class="num">{{ cell }}</td>{% endif %}{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

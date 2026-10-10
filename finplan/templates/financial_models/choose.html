@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Choose a financial model{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Choose a financial model</h1>
+    <p class="muted">Pick the one that best matches your plan. You can create as many projects as you like.</p>
+  </div>
+</div>
+<div class="model-grid">
+  {% for model in models %}{% include "partials/model_card.html" %}{% endfor %}
+</div>
+{% endblock %}

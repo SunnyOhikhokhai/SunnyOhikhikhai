@@ -1,0 +1,87 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FINPLAN{% endblock %} · FINPLAN</title>
+  <meta name="description" content="FINPLAN – simple financial planning and modelling. Plan Smarter. Grow Further.">
+  <meta name="theme-color" content="#0B1F46">
+  <link rel="icon" type="image/png" href="{% static 'images/finplan-icon.png' %}">
+  <link rel="stylesheet" href="{% static 'css/finplan.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  {% if user.is_authenticated %}
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="sidebar-brand" href="{% url 'dashboard:home' %}" aria-label="FINPLAN dashboard">
+        <img src="{% static 'images/finplan-logo.png' %}" alt="FINPLAN" class="logo-full">
+      </a>
+      <nav class="sidebar-nav">
+        <a href="{% url 'dashboard:home' %}" class="nav-link {% if nav_section == 'dashboard' %}is-active{% endif %}" {% if nav_section == 'dashboard' %}aria-current="page"{% endif %}>
+          {% include "partials/icon.html" with name="home" %}<span>Dashboard</span></a>
+        <a href="{% url 'financial_models:choose' %}" class="nav-link {% if nav_section == 'financial_models' %}is-active{% endif %}" {% if nav_section == 'financial_models' %}aria-current="page"{% endif %}>
+          {% include "partials/icon.html" with name="plus" %}<span>New model</span></a>
+        <a href="{% url 'projects:list' %}" class="nav-link {% if nav_section == 'projects' %}is-active{% endif %}" {% if nav_section == 'projects' %}aria-current="page"{% endif %}>
+          {% include "partials/icon.html" with name="folder" %}<span>Projects</span></a>
+        <a href="{% url 'reports:list' %}" class="nav-link {% if nav_section == 'reports' %}is-active{% endif %}" {% if nav_section == 'reports' %}aria-current="page"{% endif %}>
+          {% include "partials/icon.html" with name="report" %}<span>Reports</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <p class="sidebar-user">Signed in as <strong>{{ user.get_short_name|default:user.username }}</strong></p>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="nav-link nav-button">{% include "partials/icon.html" with name="logout" %}<span>Sign out</span></button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <button class="menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false" data-menu-toggle>
+          {% include "partials/icon.html" with name="menu" %}<span class="visually-hidden">Open menu</span>
+        </button>
+        <a href="{% url 'dashboard:home' %}" class="topbar-brand" aria-label="FINPLAN dashboard">
+          <img src="{% static 'images/finplan-icon.png' %}" alt="" class="logo-icon"><span>FINPLAN</span>
+        </a>
+      </header>
+      <main id="main" class="page" tabindex="-1">
+        {% include "partials/messages.html" %}
+        {% block content %}{% endblock %}
+      </main>
+      <footer class="app-footer">
+        <p>FINPLAN · Plan Smarter. Grow Further. Results are estimates based on your assumptions, not financial advice.</p>
+      </footer>
+    </div>
+  </div>
+  <div class="sidebar-backdrop" data-menu-close hidden></div>
+  {% else %}
+  <header class="public-header">
+    <div class="container public-header-inner">
+      <a href="{% url 'dashboard:landing' %}" class="public-brand" aria-label="FINPLAN home">
+        <img src="{% static 'images/finplan-logo.png' %}" alt="FINPLAN" class="logo-full">
+      </a>
+      <nav class="public-nav" aria-label="Account">
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost">Sign in</a>
+        <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Create account</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="public-main" tabindex="-1">
+    <div class="container">{% include "partials/messages.html" %}</div>
+    {% block public_content %}{% endblock %}
+  </main>
+  <footer class="public-footer">
+    <div class="container">
+      <p>FINPLAN · Plan Smarter. Grow Further.</p>
+      <p class="muted">FINPLAN provides estimates based on the assumptions you enter. It is not financial, tax or investment advice.</p>
+    </div>
+  </footer>
+  {% endif %}
+
+  <script src="{% static 'js/finplan.js' %}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

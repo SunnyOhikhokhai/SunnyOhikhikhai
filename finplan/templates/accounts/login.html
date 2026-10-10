@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Sign in{% endblock %}
+{% block public_content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <img src="{% static 'images/finplan-logo.png' %}" alt="FINPLAN" class="auth-logo">
+    <h1>Sign in</h1>
+    <p class="muted">Welcome back. Sign in to see your financial plans.</p>
+    {% if form.non_field_errors %}
+      <div class="alert alert-error" role="alert">{% for e in form.non_field_errors %}<p>{{ e }}</p>{% endfor %}</div>
+    {% endif %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="field">
+        <label for="{{ form.username.id_for_label }}">Username</label>
+        {{ form.username }}
+        {% for e in form.username.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+      </div>
+      <div class="field">
+        <label for="{{ form.password.id_for_label }}">Password</label>
+        {{ form.password }}
+        {% for e in form.password.errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    </form>
+    <p class="auth-switch">New to FINPLAN? <a href="{% url 'accounts:signup' %}" class="link">Create a free account</a></p>
+  </div>
+</div>
+{% endblock %}

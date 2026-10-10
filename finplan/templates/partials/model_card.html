@@ -1,0 +1,7 @@
+<article class="card model-card">
+  <span class="model-icon model-icon-{{ model.key }}">{% include "partials/icon.html" with name=model.icon %}</span>
+  <h3 class="model-card-title">{{ model.label }}</h3>
+  <p class="model-card-audience">{{ model.audience }}</p>
+  <p>{{ model.summary }}</p>
+  <a href="{% if user.is_authenticated %}{% url 'financial_models:new' model.key %}{% else %}{% url 'accounts:signup' %}{% endif %}" class="btn btn-primary btn-block" aria-label="Start the {{ model.label }}">Start model</a>
+</article>

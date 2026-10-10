@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Plan Smarter. Grow Further.{% endblock %}
+{% block body_class %}is-public{% endblock %}
+{% block content %}
+<div class="container">
+  <section class="hero">
+    <h1>Plan Smarter. Grow Further.</h1>
+    <p class="lead">Welcome to FINPLAN.</p>
+    <p><a href="{% url 'dashboard:home' %}" class="btn btn-primary btn-lg">Go to your dashboard</a></p>
+  </section>
+  <section class="model-grid" aria-label="Financial models">
+    {% for model in models %}{% include "partials/model_card.html" %}{% endfor %}
+  </section>
+</div>
+{% endblock %}
+{% block public_content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <p class="eyebrow">Financial planning made simple</p>
+    <h1>Plan Smarter. Grow Further.</h1>
+    <p class="lead">FINPLAN helps you understand your money and make better decisions. Answer a few plain-language
+      questions and get clear results, charts and a printable report – no accounting or spreadsheet skills needed.</p>
+    <div class="hero-actions">
+      <a href="{% url 'accounts:signup' %}" class="btn btn-primary btn-lg">Start Planning</a>
+      <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-lg">I already have an account</a>
+    </div>
+  </div>
+</section>
+
+<section class="container section">
+  <h2 class="section-title">Four models, one simple workspace</h2>
+  <p class="section-intro">Choose the model that matches your plan. Each one guides you step by step.</p>
+  <div class="model-grid">
+    {% for model in models %}{% include "partials/model_card.html" %}{% endfor %}
+  </div>
+</section>
+
+<section class="container section">
+  <div class="feature-grid">
+    <div class="feature">
+      <h3>{% include "partials/icon.html" with name="check" %} Clear, honest results</h3>
+      <p>Every figure comes with a short explanation, and every assumption is listed. Estimates are labelled as estimates.</p>
+    </div>
+    <div class="feature">
+      <h3>{% include "partials/icon.html" with name="check" %} Test different futures</h3>
+      <p>Compare conservative, expected and optimistic scenarios to see what could change.</p>
+    </div>
+    <div class="feature">
+      <h3>{% include "partials/icon.html" with name="check" %} Save, share and print</h3>
+      <p>Save your projects, come back later, duplicate them to try new ideas and download PDF reports.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

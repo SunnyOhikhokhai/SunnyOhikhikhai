@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Welcome{% if user.first_name %}, {{ user.first_name }}{% endif %}</h1>
+    <p class="muted">Plan Smarter. Grow Further.</p>
+  </div>
+  <a href="{% url 'financial_models:choose' %}" class="btn btn-primary">{% include "partials/icon.html" with name="plus" %} Create New Financial Model</a>
+</div>
+
+{% if not project_count %}
+<section class="card empty-state">
+  <h2>Your financial workspace starts here.</h2>
+  <p>Pick one of the four models below. Answer a few questions and FINPLAN will work out the numbers for you.
+     Nothing is shown here until you create your first plan.</p>
+</section>
+{% endif %}
+
+{% if drafts %}
+<section class="card section-card">
+  <div class="card-header">
+    <h2>Continue where you left off</h2>
+  </div>
+  <p class="muted">These drafts are not finished yet. Open one to complete it and see your results.</p>
+  {% include "partials/project_rows.html" with projects=drafts %}
+</section>
+{% endif %}
+
+<section class="section-block">
+  <h2 class="section-title">Start a financial model</h2>
+  <div class="model-grid">
+    {% for model in models %}{% include "partials/model_card.html" %}{% endfor %}
+  </div>
+</section>
+
+{% if project_count %}
+<div class="two-col">
+  <section class="card section-card">
+    <div class="card-header">
+      <h2>Recent projects</h2>
+      <a href="{% url 'projects:list' %}" class="link">View all</a>
+    </div>
+    {% include "partials/project_rows.html" with projects=recent %}
+  </section>
+  <section class="card section-card">
+    <div class="card-header">
+      <h2>Saved financial forecasts</h2>
+      <a href="{% url 'reports:list' %}" class="link">Reports</a>
+    </div>
+    {% if forecasts %}
+      {% include "partials/project_rows.html" with projects=forecasts %}
+    {% else %}
+      <p class="muted">No calculated forecasts yet. Finish a draft to see it here.</p>
+    {% endif %}
+  </section>
+</div>
+{% endif %}
+{% endblock %}

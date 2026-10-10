@@ -1,0 +1,10 @@
+# FINPLAN runtime dependencies.
+# Install with:  pip install -r requirements.txt
+Django>=5.1,<5.3          # Web framework (includes authentication, forms, ORM)
+reportlab>=4.0,<6         # PDF report generation
+pillow>=10.0              # Lets ReportLab embed the PNG logo in PDF reports
+python-dotenv>=1.0        # Reads settings from a local .env file
+whitenoise>=6.6           # Serves CSS/JS/images when DEBUG is off
+
+# For PostgreSQL in production, also install:
+# psycopg[binary]>=3.1

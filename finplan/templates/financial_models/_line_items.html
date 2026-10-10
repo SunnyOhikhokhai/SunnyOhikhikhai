@@ -1,0 +1,45 @@
+<fieldset class="line-items" data-line-items="{{ item.spec.key }}">
+  <legend>{{ item.spec.title }}</legend>
+  <p class="field-help">{{ item.spec.help }}</p>
+  {% for error in item.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+  <div class="line-item-rows" data-rows>
+    {% for row in item.rows %}
+    <div class="line-item-row" data-row>
+      <label class="li-name"><span class="visually-hidden">{{ item.spec.name_label }}</span>
+        <input class="input" type="text" name="{{ item.spec.key }}_name" value="{{ row.name }}" maxlength="80" placeholder="{{ item.spec.name_label }}"></label>
+      <label class="li-amount"><span class="visually-hidden">{{ item.spec.amount_label }}</span>
+        <span class="input-affix"><span class="affix" data-currency-symbol aria-hidden="true">{{ current_symbol }}</span><input class="input" type="number" step="0.01" min="0" inputmode="decimal" name="{{ item.spec.key }}_amount" value="{{ row.amount }}" placeholder="0.00"></span></label>
+      {% if item.spec.kinds %}
+      <label class="li-kind"><span class="visually-hidden">Type</span>
+        <select class="input" name="{{ item.spec.key }}_kind">
+          {% for code, label in item.spec.kinds %}<option value="{{ code }}" {% if row.kind == code %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></label>
+      {% endif %}
+      <button type="button" class="btn btn-ghost btn-sm" data-remove-row aria-label="Remove this row">Remove</button>
+    </div>
+    {% endfor %}
+  </div>
+  <template data-row-template>
+    <div class="line-item-row" data-row>
+      <label class="li-name"><span class="visually-hidden">{{ item.spec.name_label }}</span>
+        <input class="input" type="text" name="{{ item.spec.key }}_name" maxlength="80" placeholder="{{ item.spec.name_label }}"></label>
+      <label class="li-amount"><span class="visually-hidden">{{ item.spec.amount_label }}</span>
+        <span class="input-affix"><span class="affix" data-currency-symbol aria-hidden="true">{{ current_symbol }}</span><input class="input" type="number" step="0.01" min="0" inputmode="decimal" name="{{ item.spec.key }}_amount" placeholder="0.00"></span></label>
+      {% if item.spec.kinds %}
+      <label class="li-kind"><span class="visually-hidden">Type</span>
+        <select class="input" name="{{ item.spec.key }}_kind">
+          {% for code, label in item.spec.kinds %}<option value="{{ code }}">{{ label }}</option>{% endfor %}
+        </select></label>
+      {% endif %}
+      <button type="button" class="btn btn-ghost btn-sm" data-remove-row aria-label="Remove this row">Remove</button>
+    </div>
+  </template>
+  <noscript>
+    <div class="line-item-row">
+      <input class="input" type="text" name="{{ item.spec.key }}_name" maxlength="80" placeholder="{{ item.spec.name_label }}" aria-label="{{ item.spec.name_label }}">
+      <input class="input" type="number" step="0.01" min="0" name="{{ item.spec.key }}_amount" placeholder="0.00" aria-label="{{ item.spec.amount_label }}">
+      {% if item.spec.kinds %}<select class="input" name="{{ item.spec.key }}_kind" aria-label="Type">{% for code, label in item.spec.kinds %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select>{% endif %}
+    </div>
+  </noscript>
+  <button type="button" class="btn btn-secondary btn-sm" data-add-row>+ Add a row</button>
+</fieldset>

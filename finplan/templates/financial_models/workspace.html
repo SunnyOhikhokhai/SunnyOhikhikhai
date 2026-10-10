@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{% if project %}Edit {{ project.name }}{% else %}New {{ spec.label }}{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <p class="eyebrow">{{ spec.label }}</p>
+    <h1>{% if project %}{{ project.name }}{% else %}New {{ spec.short_label|lower }} plan{% endif %}</h1>
+    <p class="muted">{{ spec.summary }}</p>
+  </div>
+  {% if project and not project.is_draft %}
+  <a href="{% url 'projects:detail' project.pk %}" class="btn btn-ghost">Back to results</a>
+  {% endif %}
+</div>
+
+{% if form.non_field_errors %}
+<div class="alert alert-error" role="alert">
+  {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+</div>
+{% endif %}
+
+<form method="post" class="workspace" novalidate data-stepper>
+  {% csrf_token %}
+  {{ currency_symbols|json_script:"currency-symbols" }}
+  <nav class="stepper" aria-label="Form steps">
+    <ol>
+      {% for step in steps %}
+      <li class="stepper-item{% if step.has_errors %} has-error{% endif %}" data-step-tab="{{ step.number }}"{% if step.show_if_field %} data-show-if="{{ step.show_if_field }}" data-show-values="{{ step.show_if_values }}"{% endif %}>
+        <button type="button" data-goto="{{ step.number }}"><span class="stepper-num">{{ forloop.counter }}</span><span class="stepper-label">{{ step.title }}</span></button>
+      </li>
+      {% endfor %}
+    </ol>
+  </nav>
+
+  <div class="workspace-steps">
+    {% for step in steps %}
+    <section class="card step" id="step-{{ step.number }}" data-step="{{ step.number }}"{% if step.show_if_field %} data-show-if="{{ step.show_if_field }}" data-show-values="{{ step.show_if_values }}"{% endif %} aria-labelledby="step-title-{{ step.number }}">
+      <h2 id="step-title-{{ step.number }}" class="step-title"><span class="step-count" data-step-count>Step {{ forloop.counter }}</span> {{ step.title }}</h2>
+      {% if step.intro %}<p class="muted">{{ step.intro }}</p>{% endif %}
+
+      <div class="field-grid">
+        {% for field in step.fields %}{% include "financial_models/_field.html" %}{% endfor %}
+      </div>
+
+      {% if step.advanced or step.line_items %}
+      <details class="advanced"{% if step.has_errors %} open{% endif %}>
+        <summary>{{ step.advanced_title }}</summary>
+        <div class="field-grid">
+          {% for field in step.advanced %}{% include "financial_models/_field.html" %}{% endfor %}
+        </div>
+        {% for item in step.line_items %}{% include "financial_models/_line_items.html" %}{% endfor %}
+      </details>
+      {% endif %}
+
+      {% if step.scenario_rows %}
+      <div class="scenario-editor">
+        <p class="field-help">Your normal inputs are the <strong>expected</strong> case. Adjust how the other two scenarios differ from it.
+          Scenarios are projections based on assumptions, not predictions.</p>
+        <div class="table-wrap">
+          <table class="data-table scenario-inputs">
+            <thead><tr><th scope="col">Adjustment</th><th scope="col">{{ form.scenario_names.conservative }}</th><th scope="col">{{ form.scenario_names.optimistic }}</th></tr></thead>
+            <tbody>
+              {% for row in step.scenario_rows %}
+              <tr>
+                <th scope="row">{{ row.label }}<span class="field-help">{{ row.help }}</span></th>
+                <td><label class="visually-hidden" for="{{ row.conservative.id_for_label }}">{{ row.conservative.label }}</label>{{ row.conservative }}
+                  {% for e in row.conservative.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</td>
+                <td><label class="visually-hidden" for="{{ row.optimistic.id_for_label }}">{{ row.optimistic.label }}</label>{{ row.optimistic }}
+                  {% for e in row.optimistic.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="step-nav" data-step-nav>
+        <button type="button" class="btn btn-ghost" data-prev>Back</button>
+        <button type="button" class="btn btn-primary" data-next>Continue</button>
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+
+  <div class="workspace-actions card">
+    <p class="muted small">You can save a draft at any point and come back later. Calculating checks every step.</p>
+    <div class="action-row">
+      {# "Calculate" comes first so pressing Enter in a field calculates rather than saving a draft. #}
+      <button type="submit" name="action" value="calculate" class="btn btn-primary">{% if project and not project.is_draft %}Recalculate and save{% else %}Calculate and save{% endif %}</button>
+      <button type="submit" name="action" value="draft" class="btn btn-secondary" formnovalidate>Save draft</button>
+    </div>
+  </div>
+</form>
+{% endblock %}

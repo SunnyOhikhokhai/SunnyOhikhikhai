@@ -1,0 +1,90 @@
+{# Shared by the results page and the printable report. Expects: report, charts. #}
+{% if report.warnings %}
+<div class="alert alert-warning" role="note">
+  {% include "partials/icon.html" with name="warning" %}
+  <div>{% for w in report.warnings %}<p>{{ w }}</p>{% endfor %}</div>
+</div>
+{% endif %}
+
+<section aria-labelledby="key-results" class="report-section">
+  <h2 id="key-results" class="section-title">Key results</h2>
+  <div class="metric-grid">
+    {% for metric in report.headline %}
+    <div class="metric-card tone-{{ metric.tone }}">
+      <p class="metric-label">{{ metric.label }}</p>
+      <p class="metric-value">{{ metric.value }}</p>
+      {% if metric.help %}<p class="metric-help">{{ metric.help }}</p>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="muted small">These are estimates calculated from your assumptions. Positive results are not guaranteed.</p>
+</section>
+
+{% if charts %}
+<section class="report-section chart-grid" aria-label="Charts">
+  {% for chart, svg in charts %}
+  <figure class="card chart-card">
+    <figcaption><h3>{{ chart.title }}</h3>{% if chart.description %}<p class="muted small">{{ chart.description }}</p>{% endif %}</figcaption>
+    <div class="chart-legend" aria-hidden="true">
+      {% for s in chart.series %}<span class="legend-item"><span class="legend-swatch chart-fill-{% if s.colour == 'auto' %}green{% else %}{{ s.colour }}{% endif %}"></span>{{ s.name }}{% if s.colour == 'auto' %} (red = negative){% endif %}</span>{% endfor %}
+    </div>
+    {{ svg }}
+  </figure>
+  {% endfor %}
+</section>
+{% endif %}
+
+<div class="section-grid">
+  {% for section in report.sections %}
+  <section class="card report-card">
+    <h2 class="card-title">{{ section.title }}</h2>
+    {% if section.intro %}<p class="muted small">{{ section.intro }}</p>{% endif %}
+    <dl class="metric-list">
+      {% for metric in section.metrics %}
+      <div class="metric-row">
+        <dt>{{ metric.label }}{% if metric.help %}<span class="metric-row-help">{{ metric.help }}</span>{% endif %}</dt>
+        <dd class="tone-text-{{ metric.tone }}">{{ metric.value }}</dd>
+      </div>
+      {% endfor %}
+    </dl>
+  </section>
+  {% endfor %}
+</div>
+
+{% if report.scenario_table %}
+{% with table=report.scenario_table %}
+<section class="card report-card">
+  <h2 class="card-title">{{ table.title }}</h2>
+  <p class="muted small">{{ table.note }}</p>
+  {% include "reports/_table.html" %}
+</section>
+{% endwith %}
+{% endif %}
+
+{% for table in report.tables %}
+<section class="card report-card">
+  <h2 class="card-title">{{ table.title }}</h2>
+  {% if table.note %}<p class="muted small">{{ table.note }}</p>{% endif %}
+  {% include "reports/_table.html" %}
+</section>
+{% endfor %}
+
+<div class="section-grid">
+  <section class="card report-card">
+    <h2 class="card-title">Assumptions used</h2>
+    <dl class="metric-list">
+      {% for label, value in report.assumptions %}
+      <div class="metric-row"><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+      {% endfor %}
+    </dl>
+  </section>
+  <section class="card report-card">
+    <h2 class="card-title">Understanding these results</h2>
+    {% for title, text in report.explanations %}
+      <h3 class="explain-title">{{ title }}</h3>
+      <p>{{ text }}</p>
+    {% endfor %}
+    <h3 class="explain-title">Limitations</h3>
+    <ul class="bullets">{% for item in report.limitations %}<li>{{ item }}</li>{% endfor %}</ul>
+  </section>
+</div>

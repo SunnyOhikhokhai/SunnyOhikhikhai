@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <p class="eyebrow">{{ spec.label }}</p>
+    <h1>{{ project.name }}</h1>
+    <p class="muted">Currency: {{ project.currency }} · Last calculated {{ project.last_calculated_at|default:project.updated_at|date:"j M Y, H:i" }}</p>
+  </div>
+  <div class="action-row">
+    <a href="{% url 'financial_models:edit' project.pk %}" class="btn btn-primary">{% include "partials/icon.html" with name="edit" %} Edit and recalculate</a>
+    <a href="{% url 'reports:pdf' project.pk %}" class="btn btn-secondary">{% include "partials/icon.html" with name="download" %} Download PDF</a>
+    <a href="{% url 'reports:print' project.pk %}" class="btn btn-ghost">{% include "partials/icon.html" with name="print" %} Print view</a>
+    <form method="post" action="{% url 'projects:duplicate' project.pk %}" class="inline-form">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-ghost">{% include "partials/icon.html" with name="copy" %} Duplicate</button>
+    </form>
+    <a href="{% url 'projects:delete' project.pk %}" class="btn btn-danger-ghost">{% include "partials/icon.html" with name="trash" %} Delete</a>
+  </div>
+</div>
+
+{% if error %}
+<div class="card empty-state">
+  <h2>This project needs attention</h2>
+  <p>{{ error }}</p>
+  <a href="{% url 'financial_models:edit' project.pk %}" class="btn btn-primary">Review inputs</a>
+</div>
+{% else %}
+  {% include "reports/_report_body.html" %}
+  <p class="disclaimer">FINPLAN results are estimates and projections based on the assumptions you entered. They are not
+    predictions, guarantees, or financial, tax or investment advice.</p>
+{% endif %}
+{% endblock %}

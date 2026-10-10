@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Reports</h1>
+    <p class="muted">Every calculated project has a printable summary and a downloadable PDF. Reports are generated fresh
+      from your saved inputs, so they always match your latest numbers.</p>
+  </div>
+</div>
+{% if projects %}
+<div class="card table-card">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th scope="col">Project</th><th scope="col">Model</th><th scope="col">Currency</th><th scope="col">Last calculated</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+        {% for project in projects %}
+        <tr>
+          <th scope="row"><a href="{% url 'projects:detail' project.pk %}" class="link">{{ project.name }}</a></th>
+          <td>{{ project.get_model_type_display }}</td>
+          <td>{{ project.currency }}</td>
+          <td>{{ project.last_calculated_at|default:project.updated_at|date:"j M Y, H:i" }}</td>
+          <td class="row-actions">
+            <a href="{% url 'reports:print' project.pk %}" class="btn btn-ghost btn-sm">View printable</a>
+            <a href="{% url 'reports:pdf' project.pk %}" class="btn btn-secondary btn-sm">Download PDF</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card empty-state">
+  <h2>No reports yet</h2>
+  <p>Reports appear here once you calculate a financial model.</p>
+  <a href="{% url 'financial_models:choose' %}" class="btn btn-primary">Create a model</a>
+</div>
+{% endif %}
+{% endblock %}

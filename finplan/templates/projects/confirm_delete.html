@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ project.name }}{% endblock %}
+{% block content %}
+<div class="card confirm-card">
+  <span class="confirm-icon">{% include "partials/icon.html" with name="warning" %}</span>
+  <h1>Delete “{{ project.name }}”?</h1>
+  <p>This permanently removes the project, its inputs and its reports. This cannot be undone.</p>
+  <p class="muted small">Tip: if you only want to try different numbers, duplicate the project instead.</p>
+  <form method="post" class="action-row">
+    {% csrf_token %}
+    <a href="{{ project.get_absolute_url }}" class="btn btn-ghost">Cancel</a>
+    <button type="submit" class="btn btn-danger">Yes, delete project</button>
+  </form>
+</div>
+{% endblock %}
